@@ -28,6 +28,7 @@ import ErrorBoundary from './components/ErrorBoundary.jsx';
 // three.js와 DWG 모달은 쓸 때만 불러온다
 const Plan3D = lazy(() => import('./v3/Plan3D.jsx'));
 const DwgImport = lazy(() => import('./DwgImport.jsx'));
+const FloorplanImport = lazy(() => import('./FloorplanImport.jsx'));
 const ProductPicker = lazy(() => import('./components/ProductPicker.jsx'));
 
 // 렌더링 이미지(three.js)와 사진·링크 가구 도우미는 쓸 때만 불러온다
@@ -62,6 +63,7 @@ export default function App() {
   const [health, setHealth] = useState(null);
   const offline = health?.offline === true; // 서버가 없다(공개 사이트): AI·웹 시세·DWG·SketchUp은 끄고 나머지는 그대로 쓴다
   const [dwgOpen, setDwgOpen] = useState(false);
+  const [fpOpen, setFpOpen] = useState(false); // 평면도 그림에서 방 가져오기 창
   const [picker, setPicker] = useState(null); // 상품 고르기 창: null | { replaceUid, initial } (replaceUid가 있으면 그 가구를 바꾼다)
   const [styleBusy, setStyleBusy] = useState(false);
   const [styleErr, setStyleErr] = useState('');
@@ -507,6 +509,14 @@ export default function App() {
       : '도면에서 방을 가져왔어요. 창문은 도면에서 찾지 못해요. 방 카테고리에서 창문을 넣은 뒤 배치 추천받기를 눌러 주세요.');
     setCat('room'); // 가져온 방 크기·문과 창문 넣기가 보이게
   };
+  // 평면도 그림(아파트·빌라)에서 고른 방을 넣는다. 크기는 AI가 어림한 값이라 확인하라고 알린다. 옛 DWG 밑그림은 지운다.
+  const applyFloorplan = ({ width, depth, doors, windows }) => {
+    set((p) => ({ room: normalizeRoom({ ...p.room, width, depth, doors, windows, underlay: null }), layout: null, advice: null }));
+    setSelected(null);
+    setTab('2d');
+    notify('평면도에서 방을 가져왔어요. 크기와 문·창문을 확인한 뒤 배치 추천받기를 눌러 보세요.');
+    setCat('room');
+  };
   const exportSkp = async (open) => {
     setSkpBusy(true);
     try {
@@ -531,6 +541,7 @@ export default function App() {
     }
   };
   const skpTip = offline ? '이 기능은 PC에서 실행할 때만 돼요.' : health?.skp === false ? '이 PC에 SketchUp이나 python이 없어서 내보낼 수 없어요.' : !hasItems ? '먼저 배치를 추천받아 주세요.' : '';
+  const fpOff = offline || health?.floorplan !== true; // 평면도 그림 읽기는 서버(AI)가 있어야 한다
   const dwgTip = offline ? '도면 불러오기는 PC에서 실행할 때만 돼요.' : health?.dwg === false ? '이 PC에는 DWG 변환기가 없어서 DXF 파일만 열 수 있어요.' : '';
 
   /* ───────── 렌더링 이미지 ───────── */
@@ -606,6 +617,14 @@ export default function App() {
                 <button className="btn sm ghost" type="button" onClick={() => setRoom({ underlay: null })}>밑그림 지우기</button>
               </div>
             )}
+          </div>
+          <div className="sec">
+            <div className="sec-h"><h3>평면도 그림에서 가져오기</h3><span className="meta">아파트 · 빌라 · 주택</span></div>
+            <div className="drop">
+              <Ic name="spark" /><b>그림을 골라 주세요</b>
+              <button className="btn sm" type="button" disabled={fpOff} onClick={() => setFpOpen(true)}><Ic name="upload" className="s" />평면도 불러오기</button>
+            </div>
+            <p className="hint pc-only">{offline ? '평면도 그림 읽기는 PC에서 실행할 때만 돼요.' : '방 후보와 문·창문을 찾아 줘요. 크기는 어림값이라 확인해 주세요.'}</p>
           </div>
         </div>
         <div className="panel-f"><button className="btn ghost" type="button" onClick={resetAll}>처음부터</button>{next('style', '스타일')}</div>
@@ -753,6 +772,13 @@ export default function App() {
         <ErrorBoundary fallback={null} onError={() => { setDwgOpen(false); notify('DWG 불러오기 화면을 열지 못했어요. 방 크기를 직접 적어 주세요.', 'error'); }}>
           <Suspense fallback={null}>
             <DwgImport onApply={applyDwg} onClose={() => setDwgOpen(false)} />
+          </Suspense>
+        </ErrorBoundary>
+      )}
+      {fpOpen && (
+        <ErrorBoundary fallback={null} onError={() => { setFpOpen(false); notify('평면도 불러오기 화면을 열지 못했어요. 방 크기를 직접 적어 주세요.', 'error'); }}>
+          <Suspense fallback={null}>
+            <FloorplanImport onApply={applyFloorplan} onClose={() => setFpOpen(false)} />
           </Suspense>
         </ErrorBoundary>
       )}

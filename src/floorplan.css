@@ -1,0 +1,36 @@
+/* 주소로 방 불러오기 모달. 틀·버튼·색은 dwg.css(.dwg-*)를 그대로 쓰고, 여기에는 더 필요한 것만 둔다. */
+/* 모달 틀이 초점을 받을 때는 테두리를 그리지 않는다 (끌어다 놓는 중의 점선 테두리는 그대로) */
+.dwg-dialog:focus:not(.is-over) { outline: none; }
+.fp-form { display: flex; align-items: flex-end; gap: 8px; width: min(560px, 100%); text-align: left; }
+.fp-form > input {
+  flex: 1; min-width: 0; min-height: 40px; padding: 6px 12px;
+  border: 1px solid var(--dwg-border); border-radius: var(--dwg-r-sm);
+  background: var(--dwg-surface); color: var(--dwg-text); font: inherit;
+}
+.fp-or { display: flex; align-items: center; gap: 12px; width: min(560px, 100%); margin: 8px 0; color: var(--dwg-muted); font-size: 13px; }
+.fp-or::before, .fp-or::after { content: ''; flex: 1; height: 1px; background: var(--dwg-border); }
+
+/* 평형 고르기 */
+.fp-pick { display: flex; flex-direction: column; gap: 10px; min-height: 0; }
+.fp-types {
+  display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 10px;
+  max-height: 52vh; margin: 0; padding: 2px; overflow: auto; list-style: none;
+}
+.fp-type {
+  display: flex; flex-direction: column; gap: 2px;
+  width: 100%; height: 100%; padding: 8px;
+  border: 1px solid var(--dwg-border); border-radius: var(--dwg-r-sm);
+  background: var(--dwg-surface); color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.fp-type:hover:not(:disabled) { border-color: var(--dwg-accent); }
+.fp-type:disabled { opacity: 0.5; cursor: not-allowed; }
+.fp-type img { width: 100%; aspect-ratio: 4 / 3; margin-bottom: 4px; object-fit: contain; background: #fff; border-radius: 4px; }
+.fp-type span { color: var(--dwg-muted); font-size: 13px; }
+.fp-src { margin-right: auto; align-self: center; }
+
+/* 평면도 그림 위의 방 */
+.dwg-svg.fp-svg { cursor: default; }
+.dwg-sel .fp-win { stroke: #2f9bd6; }
+.dwg-sel .fp-open { stroke: #1456b8; stroke-width: 10; } /* 바닥까지 트인 창(구획용 창호, 통창) */
+.fp-check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
+.fp-check input { width: 16px; height: 16px; flex: none; }

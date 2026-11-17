@@ -334,3 +334,11 @@ productCategoryOf(spec) → category | null                 // 앱 가구(spec.k
 ```
 
 `role="dialog" aria-modal="true"`. 검색 칸, 분류 칩, 세부 분류, "내 방에 들어가는 것만" 스위치, 정렬, 결과 카드(사진·이름·브랜드·치수·가격·주의 배지·담기·상품 페이지 링크), 더 보기, 불러오는 중·오류·결과 없음 상태. 색·간격은 `theme.css` 변수만 쓴다.
+
+## 11. 추가: 평면도 그림에서 방 가져오기 (`/api/floorplan`)
+
+- 화면은 `src/FloorplanImport.jsx`(`{ onApply, onClose }`, DwgImport와 같은 모양), 서버는 `server/floorplan.js`다. 파트너가 만들었고 `App.jsx`의 방 패널("도면에서 가져오기" 아래)에서 연다.
+- 응답 plan은 5.4(`/api/dwg`)와 같은 모양에 `scale`, `notice`가 더 붙는다. 그림은 AI가 읽고, 좌표와 크기(cm)는 코드(`toPlan`)가 계산하고 값을 하나씩 검증한다. AI가 준 값을 `toPlan` 없이 화면으로 보내지 않는다.
+- 요청: `GET` → `{ lookup }`. `POST` 그림 바이트(`Content-Type: image/jpeg|png`, 5MB까지, 헤더 `X-Area`에 전용면적 ㎡) → plan. 오류는 `{ error }`(한국어)와 400 · 403 · 404 · 413 · 422 · 502.
+- **주소로 찾기(직방 조회)는 기본으로 꺼져 있다.** 직방의 공개되지 않은 주소를 부르는 기능이라 9 · 10절의 "자동 수집을 하지 않는다"와 맞지 않는다. `FLOORPLAN_LOOKUP=on`으로 서버를 켰을 때만 동작하고, 꺼져 있으면 JSON 요청(`{ address }`, `{ complex }`)은 모두 403이며 직방을 부르지 않는다(테스트가 지킨다). 켜는 것은 사람이 정한다.
+- 올린 그림은 로그인된 `claude` 명령에 stdin으로 넘긴다(명령줄에는 사용자 입력을 넣지 않는다, 6절). 그림은 저장하지 않고, AI가 읽은 방 좌표만 임시 폴더에 기억한다.

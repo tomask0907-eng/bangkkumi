@@ -11,6 +11,7 @@ export const ROUTES = {
   '/api/advice': 'advice.js', // POST 배치 설명 (AI)
   '/api/furniture': 'furniture.js', // POST 가구 직접 입력 → 가구 사양 (AI)
   '/api/style': 'style.js', // POST 스타일 직접 입력 → 팔레트 (AI)
+  '/api/floorplan': 'floorplan.js', // POST 평면도 그림(또는 주소) → 방 정보 (AI)
   '/api/dwg': 'dwg.js', // POST DWG/DXF 파일 → 방 정보
   '/api/skp': 'skp.js', // POST 배치 → SketchUp 파일
   '/api/shop': 'shop.js', // GET 쇼핑 정보
