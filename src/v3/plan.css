@@ -1,0 +1,104 @@
+/* 평면도(Plan.jsx, symbols.jsx)와 고른 가구 도구 막대. 색은 theme.css(시안 tokens.css)의 변수를 쓴다.
+   앞부분은 시안 tokens.css의 평면도 규칙을 그대로 옮긴 것이고, "덧붙임"부터가 새로 더한 것이다. */
+
+/* 시안이 SVG 안에 값으로 적어 둔 색(토큰이 없는 것)을 평면도 전용 변수로 모았다 */
+.plan, .th, .miniplan {
+  --plan-leaf: #D8EADF; --plan-leaf-line: #4E8F74;   /* 화분 잎 */
+  --plan-glow: #FFD98A; --plan-bulb: #FFF3D2;        /* 조명 빛, 전구 */
+  --plan-glass: var(--accent-tint);                   /* 거울·유리 */
+  --plan-shadow: #1B2A44;                             /* 방·가구 그림자 */
+  --plan-warn-line: #E08A00; --plan-warn-pill: #B45309; --plan-warn-ink: #2B1D00;
+  --plan-dim: #8C97A6;                                /* 치수선 */
+}
+
+/* ── 시안 그대로 ── */
+/* 선 굵기와 글자는 화면 px로 고정. --k = 평면도 1px이 몇 cm인지 (Plan.jsx가 크기를 재서 넣는다) */
+.plan { width: 100%; height: 100%; display: block; overflow: visible; --k: .63; touch-action: none; user-select: none; }
+.plan * { vector-effect: non-scaling-stroke; }
+.plan text { font-family: var(--font); text-anchor: middle; }
+.plan .lbl { font-size: max(calc(var(--k) * 13px), 7.6px); font-weight: 700; fill: var(--lf, var(--ink)); paint-order: stroke; stroke: var(--h, #fff); stroke-width: 3.5px; stroke-linejoin: round; letter-spacing: -0.02em; }
+.plan .lbl-s { font-size: max(calc(var(--k) * 12px), 6.8px); font-weight: 500; fill: var(--lf2, var(--ink-2)); paint-order: stroke; stroke: var(--h, #fff); stroke-width: 3px; stroke-linejoin: round; font-variant-numeric: tabular-nums; }
+.plan .dim { font-size: max(calc(var(--k) * 12px), 6.8px); font-weight: 600; fill: var(--ink-2); font-variant-numeric: tabular-nums; }
+.plan .dim.sub { font-weight: 500; }
+.plan .dim-l { stroke: var(--plan-dim); stroke-width: 1px; fill: none; }
+.plan .dim-l.tick { stroke: var(--ink-2); stroke-width: 1.5px; }
+.plan .floor { fill: var(--pf); }
+.plan .grid { stroke: rgba(58,69,87,.055); stroke-width: 1px; fill: none; }
+.plan .wall { fill: var(--plan-wall); }
+.plan .o { stroke: var(--st, var(--plan-line)); stroke-width: var(--sw, 1.2px); }
+.plan .d { stroke: var(--plan-line); stroke-width: .8px; fill: none; opacity: .5; }
+.plan .t { stroke: var(--plan-line); stroke-width: .8px; stroke-opacity: .6; }
+.plan .walk { fill: var(--accent); stroke: var(--accent); stroke-width: 4px; stroke-linejoin: round; }
+.plan .fx { cursor: grab; outline: none; }
+.plan .fx:active { cursor: grabbing; }
+.plan .is-selected { --st: var(--accent); --sw: 2px; --so: 1; }
+.plan .is-warn { --st: var(--plan-warn-line); --sw: 2px; --so: 1; }
+.plan .is-error { --st: var(--err); --sw: 2px; --so: 1; }
+.plan .guide { stroke: var(--accent); stroke-width: 1px; fill: none; }
+.plan .gtag { font-size: calc(var(--k) * 12px); font-weight: 700; fill: #fff; font-variant-numeric: tabular-nums; dominant-baseline: central; }
+.plan .gpill, .plan .gdot { stroke: var(--accent-strong); stroke-width: 18px; stroke-linecap: round; fill: none; }
+.plan .hd-o { stroke: var(--accent); stroke-width: 10px; stroke-linecap: square; fill: none; }
+.plan .hd-i { stroke: #fff; stroke-width: 6px; stroke-linecap: square; fill: none; }
+
+/* ── 덧붙임: 상태 색 ── */
+.plan .gpill.err { stroke: var(--err-text); }
+.plan .plan-marks .gdot { stroke: var(--warn); }   /* theme.css의 .plan .gdot보다 늦게 불리지 않아도 이기게 */
+.plan .gtag.on-warn { fill: var(--plan-warn-ink); }
+.plan .hd-o.err { stroke: var(--err); }
+.plan .clash { fill: var(--err); opacity: .2; }
+.plan .clash-o { fill: none; stroke: var(--err); stroke-width: 2px; }
+.plan .hatch-bar { fill: var(--err); }
+.plan .plan-clear { fill: var(--plan-warn-line); fill-opacity: .07; stroke: var(--plan-warn-line); stroke-width: 1px; stroke-dasharray: 3 3; }
+
+/* ── 덧붙임: 방 ── */
+.plan .win { fill: #fff; stroke: var(--plan-wall); stroke-width: 1px; }
+.plan .win-l { fill: none; stroke: var(--plan-wall); stroke-width: .8px; opacity: .7; }
+.plan .swing { fill: var(--plan-line); opacity: .04; }
+.plan .curtain { opacity: .75; }
+.plan .plan-underlay { fill: none; stroke: var(--ink-3); stroke-width: .8px; opacity: .45; }
+.plan .sh { flood-color: var(--plan-shadow); }
+.plan .lift-sel { flood-color: var(--accent-strong); }
+.plan .glow-stop { stop-color: var(--plan-glow); }
+
+/* ── 덧붙임: 가구 ── */
+.plan .o.thin { stroke-width: var(--sw, .8px); stroke-opacity: var(--so, .6); }   /* 러그, 행거·거울의 바닥 자리 */
+.plan .ghost { fill: transparent; stroke: var(--st, none); }                          /* 화분: 상태가 있을 때만 외곽선 */
+.plan .is-guess .main { stroke-dasharray: 4 3; }                                      /* 치수를 모르는 가구 */
+.plan .rug-in { fill: none; stroke: #fff; stroke-width: 1.5px; opacity: .85; }
+.plan .rod { fill: none; stroke: var(--plan-line); stroke-width: 1.6px; stroke-linecap: round; }
+.plan .dot { fill: var(--plan-line); }
+.plan .leaf, .th .leaf { fill: var(--plan-leaf); stroke: var(--plan-leaf-line); stroke-width: .9px; }
+.plan .glass, .th .glass { fill: var(--plan-glass); }
+.plan .bulb, .th .bulb { fill: var(--plan-bulb); }
+/* 새 배치가 나오면 가구가 차례로 나타난다 */
+.plan .fx.is-enter { animation: plan-in .34s cubic-bezier(.2,.8,.2,1) backwards; }
+@keyframes plan-in { from { opacity: 0; transform: translateY(5px); } }
+@media (prefers-reduced-motion: reduce) { .plan .fx.is-enter { animation: none; } }
+
+/* ── 고른 가구 도구 막대: 캔버스(.stage) 아래 가운데에 고정, 단축키도 여기에 (시안 그대로) ── */
+.item-bar { position: absolute; left: calc((100% - 196px) / 2 + 8px); bottom: 14px; transform: translateX(-50%); display: flex; align-items: center; gap: 2px; padding: 4px; white-space: nowrap; z-index: 2;
+  background: var(--surface); border: 1px solid var(--line); box-shadow: var(--sh-2); border-radius: 14px; }
+.item-bar .who { display: flex; align-items: center; gap: 8px; padding: 0 10px 0 8px; font-size: var(--fs-13); font-weight: 700; }
+.item-bar .who i { width: 10px; height: 10px; border-radius: 3px; border: 2px solid var(--accent); flex: none; }
+.item-bar .who b { font-weight: inherit; max-width: 15em; overflow: hidden; text-overflow: ellipsis; }
+.item-bar .who span { font-weight: 500; color: var(--ink-3); font-variant-numeric: tabular-nums; }
+.item-bar button, .item-bar .mv { display: inline-flex; align-items: center; gap: 6px; height: 32px; padding: 0 10px; border: 0; border-radius: 9px; background: transparent; color: var(--ink); font-size: var(--fs-13); font-weight: 600; }
+.item-bar button:hover { background: var(--bg); }
+.item-bar .ic { width: 15px; height: 15px; flex: none; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; color: var(--ink-2); }
+.item-bar .sepv { width: 1px; height: 18px; background: var(--line); margin: 0 2px; }
+.item-bar button.del, .item-bar button.del .ic { color: var(--err-text); }
+.item-bar kbd { font-family: var(--font); font-size: var(--fs-12); font-weight: 700; padding: 0 5px; border-radius: 5px; border: 1px solid var(--line-strong); background: var(--surface-2); color: var(--ink-3); line-height: 18px; }
+/* 덧붙임: 옮기기의 화살표 네 개는 누를 수 있다(마우스·터치로도 5cm씩) */
+.item-bar .mv kbd { display: inline-flex; padding: 0 2px; }
+.item-bar kbd button { display: inline-block; height: 18px; min-width: 16px; padding: 0 2px; border-radius: 4px; font: inherit; color: inherit; line-height: 18px; }
+.item-bar kbd button:hover { background: var(--accent-tint); color: var(--accent-on-tint); }
+
+/* ── 가구 썸네일(FurnitureThumb): 시안 .th 그대로 ── */
+.th { width: 48px; height: 48px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); display: grid; place-items: center; flex: none; }
+.th svg { width: 40px; height: 40px; fill: none; stroke: var(--plan-line); stroke-width: 1.2; stroke-linejoin: round; stroke-linecap: round; }
+.th .books { stroke: var(--c5); stroke-width: 1.6; }
+
+/* ── 배치안 작은 그림(MiniPlan): 시안 .thumbs 안의 그림 ── */
+.miniplan { display: block; }
+.miniplan .mp-room { fill: #fff; stroke: var(--plan-wall); }
+.miniplan .mp-f { stroke: var(--plan-line); }

@@ -1,0 +1,569 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>방꾸미 v2 화면 시안</title>
+<link rel="icon" href="data:," />
+<!-- 화면 시안: 구조와 클래스 이름을 그대로 가져다 쓰기 위한 정적인 파일. 설명은 DESIGN.md
+     보는 법: BK_CACHE=node_modules/.vite-design npx vite --port 5185 --strictPort → /docs/mockup.html
+     평면도 SVG(gen:plan, gen:thumb1~4)는 src/symbols.jsx로 그린 결과를 붙여 넣은 것 -->
+<link rel="stylesheet" href="../src/theme.css" />
+<style>
+  /* 시안 전용: 아래쪽 "상태 모음" 영역 배치만. 실제 앱에는 필요 없다 */
+  .extras { padding: 40px 24px 80px; max-width: 1500px; margin: 0 auto; }
+  .extras > h2 { font-size: 24px; font-weight: 800; letter-spacing: -0.03em; }
+  .extras > p { color: var(--text-3); margin: 4px 0 28px; }
+  .extras h3 { font-size: 13px; font-weight: 700; color: var(--text-3); letter-spacing: 0.04em; margin: 36px 0 12px; }
+  .demo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(330px, 1fr)); gap: 16px; align-items: start; }
+  .demo-wide { display: grid; grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+  .demo-stage { height: 300px; border: 1px solid var(--line); border-radius: var(--r-lg); overflow: hidden; display: flex; }
+  .demo-stage > .canvas-stage { flex: 1; }
+  .demo-row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .demo-modal { position: static; animation: none; width: 100%; max-height: none; border: 1px solid var(--line); }
+  .dwg-body { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); gap: 16px; }
+  .dwg-preview { background: #23262b; border-radius: var(--r-md); aspect-ratio: 4 / 3; overflow: hidden; }
+  .dwg-preview svg { width: 100%; height: 100%; display: block; }
+  .room-option { display: flex; align-items: center; gap: 10px; width: 100%; padding: 10px 12px; text-align: left; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); cursor: pointer; }
+  .room-option[aria-pressed='true'] { border-color: var(--accent-600); box-shadow: 0 0 0 1px var(--accent-600); background: var(--accent-50); }
+  .room-option b { font-weight: 700; }
+  @media (max-width: 900px) { .demo-wide, .dwg-body { grid-template-columns: minmax(0, 1fr); } }
+</style>
+</head>
+<body>
+
+<!-- 아이콘 모음: <svg class="icon"><use href="#i-이름" /></svg> -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-plus" viewBox="0 0 16 16"><path d="M8 3v10M3 8h10" /></symbol>
+  <symbol id="i-x" viewBox="0 0 16 16"><path d="M4 4l8 8M12 4l-8 8" /></symbol>
+  <symbol id="i-check" viewBox="0 0 16 16"><path d="M3.5 8.5l3 3 6-7" /></symbol>
+  <symbol id="i-chev-l" viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" /></symbol>
+  <symbol id="i-chev-r" viewBox="0 0 16 16"><path d="M6 3l5 5-5 5" /></symbol>
+  <symbol id="i-left" viewBox="0 0 16 16"><path d="M13 8H3M7 4L3 8l4 4" /></symbol>
+  <symbol id="i-right" viewBox="0 0 16 16"><path d="M3 8h10M9 4l4 4-4 4" /></symbol>
+  <symbol id="i-up" viewBox="0 0 16 16"><path d="M8 13V3M4 7l4-4 4 4" /></symbol>
+  <symbol id="i-down" viewBox="0 0 16 16"><path d="M8 3v10M4 9l4 4 4-4" /></symbol>
+  <symbol id="i-rotate" viewBox="0 0 16 16"><path d="M13 8a5 5 0 1 1-1.6-3.7M13 2.5v3h-3" /></symbol>
+  <symbol id="i-trash" viewBox="0 0 16 16"><path d="M3 4.5h10M6.5 4.5V3h3v1.5M4.5 4.5l.6 8.5h5.8l.6-8.5" /></symbol>
+  <symbol id="i-ext" viewBox="0 0 16 16"><path d="M9 3h4v4M13 3L7.5 8.5M11 9.5V13H3V5h3.5" /></symbol>
+  <symbol id="i-sparkle" viewBox="0 0 16 16"><path d="M7 2.5l1.2 3.3L11.5 7 8.2 8.2 7 11.5 5.8 8.2 2.5 7l3.3-1.2zM12.2 10.5l.6 1.7 1.7.6-1.7.6-.6 1.7-.6-1.7-1.7-.6 1.7-.6z" /></symbol>
+  <symbol id="i-upload" viewBox="0 0 16 16"><path d="M8 10.5V3M5 6l3-3 3 3M3 10.5V13h10v-2.5" /></symbol>
+  <symbol id="i-cube" viewBox="0 0 16 16"><path d="M8 2l5 2.8v6.4L8 14l-5-2.8V4.8zM3 4.8l5 2.8 5-2.8M8 7.6V14" /></symbol>
+  <symbol id="i-plan" viewBox="0 0 16 16"><path d="M2.5 2.5h11v11h-11zM2.5 7h4.5M7 2.5V9M10 13.5V10h3.5" /></symbol>
+  <symbol id="i-door" viewBox="0 0 16 16"><path d="M4 13.5v-11h8v11M2.5 13.5h11M9.6 8v.6" /></symbol>
+  <symbol id="i-window" viewBox="0 0 16 16"><path d="M3 3h10v10H3zM8 3v10M3 8h10" /></symbol>
+  <symbol id="i-alert" viewBox="0 0 16 16"><path d="M8 6v3.2M8 11.4v.2M8 2.2l6.3 11.3H1.7z" /></symbol>
+  <symbol id="i-book" viewBox="0 0 16 16"><path d="M2.5 3.5h4a1.5 1.5 0 0 1 1.5 1.5v8a1.5 1.5 0 0 0-1.5-1.5h-4zM13.5 3.5h-4A1.5 1.5 0 0 0 8 5v8a1.5 1.5 0 0 1 1.5-1.5h4z" /></symbol>
+</svg>
+
+<div class="app">
+  <!-- ───────── 위쪽 막대 ───────── -->
+  <header class="topbar">
+    <a class="brand" href="#" aria-label="방꾸미 처음으로">
+      <span class="brand-mark">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M4 10V4h12v12h-6" /><path d="M4 16l3.6-3" /><path d="M9.8 16a6 6 0 0 0-2.2-4.6" stroke-dasharray="1.2 2.2" /><rect x="10.6" y="6.6" width="3" height="3" rx=".6" fill="currentColor" stroke="none" />
+        </svg>
+      </span>
+      <span class="brand-name">방꾸미</span>
+    </a>
+    <span class="brand-tag">가구를 사기 전에, 내 방에 맞는지 AI와 먼저 놓아 봐요</span>
+    <div class="topbar-actions">
+      <button class="btn btn-ghost" type="button"><svg class="icon"><use href="#i-book" /></svg><span class="btn-label">예시 불러오기</span></button>
+      <button class="btn" type="button"><svg class="icon"><use href="#i-upload" /></svg><span class="btn-label">DWG 불러오기</span></button>
+      <button class="btn btn-dark" type="button"><svg class="icon"><use href="#i-cube" /></svg><span class="btn-label">SketchUp 내보내기</span></button>
+    </div>
+  </header>
+
+  <main class="workspace">
+    <!-- ───────── 왼쪽: 입력 ───────── -->
+    <aside class="panel" aria-label="입력">
+      <div class="panel-head">
+        <h2 class="panel-title">입력</h2>
+        <span class="card-sub" style="margin-left:auto">네 가지만 알려 주세요</span>
+      </div>
+      <div class="panel-body">
+
+        <section class="step is-done" aria-labelledby="s1">
+          <div class="step-head"><span class="step-num">1</span><h3 class="step-title" id="s1">방</h3><span class="step-meta">3.0 × 4.0m · 약 3.6평</span></div>
+          <div class="field-row">
+            <label class="field"><span class="field-label">가로</span><span class="input-group"><input class="input" type="number" value="300" min="150" max="1500" step="10" /><span class="input-unit">cm</span></span></label>
+            <label class="field"><span class="field-label">세로</span><span class="input-group"><input class="input" type="number" value="400" min="150" max="1500" step="10" /><span class="input-unit">cm</span></span></label>
+            <label class="field"><span class="field-label">천장 높이</span><span class="input-group"><input class="input" type="number" value="240" min="200" max="400" step="5" /><span class="input-unit">cm</span></span></label>
+          </div>
+
+          <div class="sub-label">문 · 창문</div>
+          <div class="opening opening-head" aria-hidden="true"><span>종류</span><span>벽</span><span>시작(cm)</span><span>폭(cm)</span><span></span></div>
+          <div class="opening">
+            <span class="opening-kind"><svg class="icon"><use href="#i-door" /></svg>현관</span>
+            <select class="select select-sm" aria-label="현관문이 있는 벽"><option>위쪽</option><option selected>아래쪽</option><option>왼쪽</option><option>오른쪽</option></select>
+            <input class="input input-sm" type="number" value="20" aria-label="현관문 시작 위치(cm)" />
+            <input class="input input-sm" type="number" value="90" aria-label="현관문 폭(cm)" />
+            <button class="btn btn-ghost btn-icon btn-sm tooltip" type="button" data-tip="현관문은 꼭 있어야 해요" aria-label="현관문 지우기" disabled><svg class="icon"><use href="#i-x" /></svg></button>
+          </div>
+          <div class="opening">
+            <span class="opening-kind"><svg class="icon"><use href="#i-window" /></svg>창문</span>
+            <select class="select select-sm" aria-label="창문이 있는 벽"><option selected>위쪽</option><option>아래쪽</option><option>왼쪽</option><option>오른쪽</option></select>
+            <input class="input input-sm" type="number" value="40" aria-label="창문 시작 위치(cm)" />
+            <input class="input input-sm" type="number" value="140" aria-label="창문 폭(cm)" />
+            <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="창문 지우기"><svg class="icon"><use href="#i-x" /></svg></button>
+          </div>
+          <div class="row" style="margin-top:8px">
+            <button class="btn btn-soft btn-sm" type="button"><svg class="icon"><use href="#i-plus" /></svg>문 추가</button>
+            <button class="btn btn-soft btn-sm" type="button"><svg class="icon"><use href="#i-plus" /></svg>창문 추가</button>
+          </div>
+        </section>
+
+        <section class="step is-done" aria-labelledby="s2">
+          <div class="step-head"><span class="step-num">2</span><h3 class="step-title" id="s2">스타일</h3><span class="step-meta">내추럴</span></div>
+          <div class="style-grid" role="group" aria-label="스타일 고르기">
+            <button class="style-card" type="button" aria-pressed="false"><span class="palette-strip"><i style="background:#f4f1ec"></i><i style="background:#d6d3cf"></i><i style="background:#d9c7ab"></i><i style="background:#e6dccb"></i><i style="background:#3d3d3d"></i></span><span class="style-name">미니멀</span></button>
+            <button class="style-card" type="button" aria-pressed="true"><span class="palette-strip"><i style="background:#f3ecdf"></i><i style="background:#c8a77e"></i><i style="background:#b08a5e"></i><i style="background:#ddd0b8"></i><i style="background:#7d8b5a"></i></span><span class="style-name">내추럴</span></button>
+            <button class="style-card" type="button" aria-pressed="false"><span class="palette-strip"><i style="background:#e2e3e4"></i><i style="background:#8d8f91"></i><i style="background:#4a3b30"></i><i style="background:#a7a9ab"></i><i style="background:#c7a250"></i></span><span class="style-name">모던</span></button>
+            <button class="style-card" type="button" aria-pressed="false"><span class="palette-strip"><i style="background:#efe4cf"></i><i style="background:#8a5a3c"></i><i style="background:#7a4a2a"></i><i style="background:#c9a227"></i><i style="background:#7b2d2d"></i></span><span class="style-name">빈티지</span></button>
+            <button class="style-card" type="button" aria-pressed="false"><span class="palette-strip"><i style="background:#f4f4f0"></i><i style="background:#dcc6a4"></i><i style="background:#e9dfcf"></i><i style="background:#b8c4c9"></i><i style="background:#e3b23c"></i></span><span class="style-name">북유럽</span></button>
+            <button class="style-card" type="button" aria-pressed="false"><span class="palette-strip"><i style="background:#efe9df"></i><i style="background:#b99a74"></i><i style="background:#8d7257"></i><i style="background:#d6cfc2"></i><i style="background:#3f4a3c"></i></span><span class="style-name">재팬디</span></button>
+            <button class="style-card" type="button" aria-pressed="false"><span class="palette-strip"><i style="background:#f1e9da"></i><i style="background:#a97142"></i><i style="background:#7b4a2b"></i><i style="background:#e0b05a"></i><i style="background:#2f6f73"></i></span><span class="style-name">미드센추리</span></button>
+            <button class="style-card" type="button" aria-pressed="false"><span class="palette-strip"><i style="background:#d8d6d2"></i><i style="background:#7a7672"></i><i style="background:#3b3836"></i><i style="background:#8c8479"></i><i style="background:#b5532f"></i></span><span class="style-name">인더스트리얼</span></button>
+          </div>
+          <div class="sub-label">직접 입력</div>
+          <div class="input-join">
+            <input class="input" type="text" maxlength="60" placeholder="예: 제주 감성 우드 앤 화이트" aria-label="원하는 스타일을 글로 적기" />
+            <button class="btn btn-ai" type="button"><svg class="icon"><use href="#i-sparkle" /></svg>AI로 만들기</button>
+          </div>
+        </section>
+
+        <section class="step is-done" aria-labelledby="s3">
+          <div class="step-head"><span class="step-num">3</span><h3 class="step-title" id="s3">예산</h3><span class="step-meta">가구와 소품을 합친 금액</span></div>
+          <div class="field-row">
+            <span class="input-group" style="flex:0 0 108px"><input class="input" type="number" value="150" min="10" max="1000" step="10" aria-label="예산(만원)" /><span class="input-unit">만원</span></span>
+            <div class="grow">
+              <input class="slider" type="range" min="30" max="500" step="10" value="150" style="--pct:25.5%" aria-label="예산 슬라이더" />
+              <div class="slider-ticks" aria-hidden="true"><span>30</span><span>150</span><span>300</span><span>500만원</span></div>
+            </div>
+          </div>
+        </section>
+
+        <section class="step" aria-labelledby="s4">
+          <div class="step-head"><span class="step-num">4</span><h3 class="step-title" id="s4">가구</h3><span class="step-meta">8개 · 122만 7천원</span></div>
+          <label class="field">
+            <span class="field-label">필요한 가구를 적어 주세요</span>
+            <textarea class="textarea" rows="2" placeholder="예: 슈퍼싱글 침대, 책상 1400, 옷장 2개, 전자피아노">슈퍼싱글 침대, 책상 1200, 옷장, 책장, 전자피아노, 러그, 전신거울, 화분</textarea>
+            <span class="field-hint">쉼표로 나눠 적으면 바로 알아봐요. 크기(책상 1400)와 개수(옷장 2개)도 쓸 수 있어요.</span>
+          </label>
+
+          <div class="sub-label">알아본 가구 <span class="badge">8</span><span>치수를 누르면 고칠 수 있어요</span></div>
+          <div class="spec-list">
+            <div class="spec">
+              <i class="spec-dot" style="background:#c9b8a6"></i>
+              <div class="spec-main"><div class="spec-name"><span>슈퍼싱글 침대</span></div><button class="spec-dims" type="button">110 × 200 × 45 cm</button></div>
+              <span class="spec-price">32만원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="슈퍼싱글 침대 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+            </div>
+            <div class="spec">
+              <i class="spec-dot" style="background:#a58a6f"></i>
+              <div class="spec-main"><div class="spec-name"><span>책상</span></div><button class="spec-dims" type="button">120 × 60 × 72 cm</button></div>
+              <span class="spec-price">12만원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="책상 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+            </div>
+            <div class="spec">
+              <i class="spec-dot" style="background:#8c7a6b"></i>
+              <div class="spec-main"><div class="spec-name"><span>옷장</span></div><button class="spec-dims" type="button">100 × 60 × 200 cm</button></div>
+              <span class="spec-price">20만원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="옷장 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+            </div>
+            <div class="spec">
+              <i class="spec-dot" style="background:#b09a82"></i>
+              <div class="spec-main"><div class="spec-name"><span>책장</span></div><button class="spec-dims" type="button">80 × 30 × 180 cm</button></div>
+              <span class="spec-price">7만원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="책장 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+            </div>
+            <div class="spec">
+              <i class="spec-dot" style="background:#2f2d2c"></i>
+              <div class="spec-main"><div class="spec-name"><span>전자피아노</span><span class="badge badge-ai tooltip" data-tip="카탈로그에 없어서 AI가 크기와 가격을 어림했어요"><svg class="icon"><use href="#i-sparkle" /></svg>AI 추정</span></div><button class="spec-dims" type="button">130 × 35 × 80 cm</button></div>
+              <span class="spec-price">39만원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="전자피아노 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+            </div>
+            <div class="spec">
+              <i class="spec-dot" style="background:#d8cbb6"></i>
+              <div class="spec-main"><div class="spec-name"><span>러그</span></div><button class="spec-dims" type="button">130 × 190 × 1 cm</button></div>
+              <span class="spec-price">5만 9천원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="러그 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+            </div>
+            <!-- 치수를 모르는 가구: 노란 바탕 + "치수 확인" 배지, 눌러서 펼친 상태(is-open) -->
+            <div class="spec is-check is-open">
+              <i class="spec-dot" style="background:#b09a82"></i>
+              <div class="spec-main"><div class="spec-name"><span>전신거울</span><span class="badge badge-warn">치수 확인</span></div><span class="field-hint">임시 크기예요. 실제 치수로 고쳐 주세요.</span></div>
+              <span class="spec-price">3만 9천원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="전신거울 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+              <div class="spec-edit">
+                <span class="input-group"><input class="input input-sm" type="number" value="50" aria-label="전신거울 폭(cm)" /><span class="input-unit">폭</span></span>
+                <span class="input-group"><input class="input input-sm" type="number" value="36" aria-label="전신거울 깊이(cm)" /><span class="input-unit">깊이</span></span>
+                <span class="input-group"><input class="input input-sm" type="number" value="160" aria-label="전신거울 높이(cm)" /><span class="input-unit">높이</span></span>
+                <span class="input-group"><input class="input input-sm" type="number" value="39000" step="1000" aria-label="전신거울 가격(원)" /><span class="input-unit">원</span></span>
+              </div>
+            </div>
+            <div class="spec">
+              <i class="spec-dot" style="background:#6b9a63"></i>
+              <div class="spec-main"><div class="spec-name"><span>화분</span></div><button class="spec-dims" type="button">40 × 40 × 90 cm</button></div>
+              <span class="spec-price">2만 9천원</span>
+              <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="화분 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="panel-foot">
+        <button class="btn btn-primary btn-lg btn-block" type="button"><svg class="icon"><use href="#i-sparkle" /></svg>배치 추천받기</button>
+      </div>
+    </aside>
+
+    <!-- ───────── 가운데: 평면도 ───────── -->
+    <section class="canvas" aria-label="평면도">
+      <div class="canvas-head">
+        <div class="tabs" role="tablist" aria-label="보기 방식">
+          <button class="tab" role="tab" type="button" aria-selected="true"><svg class="icon"><use href="#i-plan" /></svg>2D 평면도</button>
+          <button class="tab" role="tab" type="button" aria-selected="false"><svg class="icon"><use href="#i-cube" /></svg>3D 보기</button>
+        </div>
+        <div class="grow">
+          <div class="variant" role="group" aria-label="배치안 바꾸기">
+            <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="이전 배치안"><svg class="icon"><use href="#i-chev-l" /></svg></button>
+            <span class="variant-label" aria-live="polite">배치안 <b>1</b> / 4</span>
+            <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="다음 배치안"><svg class="icon"><use href="#i-chev-r" /></svg></button>
+          </div>
+        </div>
+        <label class="switch"><input type="checkbox" checked /><span class="switch-track"></span>통로 보기</label>
+      </div>
+
+      <div class="canvas-stage has-rail">
+<!-- gen:plan -->
+<svg class="plan" viewBox="-37.2 -37.2 358.4 474.4" role="group" aria-label="방 평면도. 가로 300cm, 세로 400cm, 가구 8개"><defs><pattern id="bk-floor" width="192" height="72" patternUnits="userSpaceOnUse" patternTransform="rotate(90)"><rect x="-96" y="0" width="96" height="12" fill="#dac3a7" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="0" y="0" width="96" height="12" fill="#dac3a7" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="96" y="0" width="96" height="12" fill="#dac3a7" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="-62" y="12" width="96" height="12" fill="#dfcbb3" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="34" y="12" width="96" height="12" fill="#dfcbb3" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="130" y="12" width="96" height="12" fill="#dfcbb3" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="-28" y="24" width="96" height="12" fill="#ccb69c" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="68" y="24" width="96" height="12" fill="#ccb69c" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="164" y="24" width="96" height="12" fill="#ccb69c" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="-79" y="36" width="96" height="12" fill="#ddc7ad" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="17" y="36" width="96" height="12" fill="#ddc7ad" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="113" y="36" width="96" height="12" fill="#ddc7ad" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="-45" y="48" width="96" height="12" fill="#d3bda1" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="51" y="48" width="96" height="12" fill="#d3bda1" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="147" y="48" width="96" height="12" fill="#d3bda1" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="-14" y="60" width="96" height="12" fill="#dec9b0" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="82" y="60" width="96" height="12" fill="#dec9b0" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect><rect x="178" y="60" width="96" height="12" fill="#dec9b0" stroke="#b39f88" stroke-width="0.35" stroke-opacity="0.5"></rect></pattern><linearGradient id="bk-sun-top" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fffbea" stop-opacity="0.62"></stop><stop offset="1" stop-color="#fffbea" stop-opacity="0"></stop></linearGradient><linearGradient id="bk-sun-bottom" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#fffbea" stop-opacity="0.62"></stop><stop offset="1" stop-color="#fffbea" stop-opacity="0"></stop></linearGradient><linearGradient id="bk-sun-left" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fffbea" stop-opacity="0.62"></stop><stop offset="1" stop-color="#fffbea" stop-opacity="0"></stop></linearGradient><linearGradient id="bk-sun-right" x1="1" y1="0" x2="0" y2="0"><stop offset="0" stop-color="#fffbea" stop-opacity="0.62"></stop><stop offset="1" stop-color="#fffbea" stop-opacity="0"></stop></linearGradient><clipPath id="bk-room"><rect width="300" height="400"></rect></clipPath></defs><g class="plan-room"><rect class="plan-wall" x="-10" y="-10" width="320" height="420" rx="2" style="fill:var(--plan-wall, #2e2a25)"></rect><rect width="300" height="400" fill="url(#bk-floor)"></rect><g clip-path="url(#bk-room)" pointer-events="none"><polygon points="40 0 180 0 213 150 73 150" fill="url(#bk-sun-top)"></polygon></g><rect x="4" y="4" width="292" height="392" fill="none" stroke="#3a2a14" stroke-opacity="0.05" stroke-width="8" pointer-events="none"></rect><rect x="1.5" y="1.5" width="297" height="397" fill="none" stroke="#3a2a14" stroke-opacity="0.08" stroke-width="3" pointer-events="none"></rect><g><rect x="40" y="-10" width="140" height="10" fill="#eaf4f8" stroke="#7fa8bd" stroke-width="1" vector-effect="non-scaling-stroke"></rect><path d="M40 -5h140M40 -7.199999999999999h140M40 -2.8000000000000007h140" stroke="#7fa8bd" stroke-width="1" vector-effect="non-scaling-stroke"></path></g><g pointer-events="none"><rect x="20" y="400" width="90" height="10" fill="#e7d8c6"></rect><path d="M20 400L110 400A90 90 0 0 0 20 310Z" fill="#2a2118" fill-opacity="0.06"></path><path d="M110 400A90 90 0 0 0 20 310" fill="none" stroke="#2a2118" stroke-opacity="0.5" stroke-width="1" stroke-dasharray="4 3" vector-effect="non-scaling-stroke"></path><line x1="20" y1="400" x2="20" y2="310" stroke="#8a6a4a" stroke-width="4" stroke-linecap="round"></line><line x1="20" y1="400" x2="20" y2="310" stroke="#d9b98f" stroke-width="2.2" stroke-linecap="round"></line><text x="65" y="362.2" text-anchor="middle" dominant-baseline="central" font-size="8" font-weight="600" fill="#2a2118" fill-opacity="0.5">현관</text></g><g class="plan-dims" style="stroke:var(--text-3, #6f685d);fill:var(--text-3, #6f685d)" stroke-width="1" pointer-events="none"><path d="M0 -22H300M0 -24.8v5.6000000000000005M300 -24.8v5.6000000000000005M-22 0V400M-24.8 0h5.6000000000000005M-24.8 400h5.6000000000000005" fill="none" vector-effect="non-scaling-stroke"></path><text x="150" y="-27.6" text-anchor="middle" font-size="8.8" font-weight="600" stroke="none">가로 300cm</text><text transform="translate(-27.6 200) rotate(-90)" text-anchor="middle" font-size="8.8" font-weight="600" stroke="none">세로 400cm</text><g transform="translate(0 421.2)"><rect width="50" height="3.2" stroke="none"></rect><rect x="50" width="50" height="3.2" fill="#fff" vector-effect="non-scaling-stroke"></rect><rect width="100" height="3.2" fill="none" vector-effect="non-scaling-stroke"></rect><text x="104.8" y="1.6" dominant-baseline="central" font-size="8.8" font-weight="600" stroke="none">1m</text></g></g></g><g class="plan-item is-floor" tabindex="0" role="button" data-uid="rug" aria-pressed="false" aria-label="러그. 방향키로 옮기고 R로 돌려요"><g transform="translate(50 105) rotate(0)"><g class="symbol symbol-rug" data-kind="rug"><g opacity="0.86"><path d="M1.625 0v-2.6M1.625 190v2.6M4.875 0v-2.6M4.875 190v2.6M8.125 0v-2.6M8.125 190v2.6M11.375 0v-2.6M11.375 190v2.6M14.625 0v-2.6M14.625 190v2.6M17.875 0v-2.6M17.875 190v2.6M21.125 0v-2.6M21.125 190v2.6M24.375 0v-2.6M24.375 190v2.6M27.625 0v-2.6M27.625 190v2.6M30.875 0v-2.6M30.875 190v2.6M34.125 0v-2.6M34.125 190v2.6M37.375 0v-2.6M37.375 190v2.6M40.625 0v-2.6M40.625 190v2.6M43.875 0v-2.6M43.875 190v2.6M47.125 0v-2.6M47.125 190v2.6M50.375 0v-2.6M50.375 190v2.6M53.625 0v-2.6M53.625 190v2.6M56.875 0v-2.6M56.875 190v2.6M60.125 0v-2.6M60.125 190v2.6M63.375 0v-2.6M63.375 190v2.6M66.625 0v-2.6M66.625 190v2.6M69.875 0v-2.6M69.875 190v2.6M73.125 0v-2.6M73.125 190v2.6M76.375 0v-2.6M76.375 190v2.6M79.625 0v-2.6M79.625 190v2.6M82.875 0v-2.6M82.875 190v2.6M86.125 0v-2.6M86.125 190v2.6M89.375 0v-2.6M89.375 190v2.6M92.625 0v-2.6M92.625 190v2.6M95.875 0v-2.6M95.875 190v2.6M99.125 0v-2.6M99.125 190v2.6M102.375 0v-2.6M102.375 190v2.6M105.625 0v-2.6M105.625 190v2.6M108.875 0v-2.6M108.875 190v2.6M112.125 0v-2.6M112.125 190v2.6M115.375 0v-2.6M115.375 190v2.6M118.625 0v-2.6M118.625 190v2.6M121.875 0v-2.6M121.875 190v2.6M125.125 0v-2.6M125.125 190v2.6M128.375 0v-2.6M128.375 190v2.6" stroke="#bcb1a0" stroke-width="0.8" stroke-opacity="0.7" vector-effect="non-scaling-stroke"></path><rect width="130" height="190" rx="2" fill="#e0d5c2" stroke="#94897b" stroke-width="0.9" vector-effect="non-scaling-stroke"></rect><rect x="7.8" y="7.8" width="114.4" height="174.4" rx="1" fill="#e9e1d3" stroke="#7d8b5a" stroke-opacity="0.5" stroke-width="1.2" vector-effect="non-scaling-stroke"></rect><path d="M15.6 19.6H114.4M15.6 170.4H114.4M15.6 23.6H114.4M15.6 166.4H114.4M15.6 27.6H114.4M15.6 162.4H114.4" fill="none" stroke="#7d8b5a" stroke-opacity="0.35" stroke-width="1" vector-effect="non-scaling-stroke"></path></g></g><g transform="translate(65 95) rotate(0)" pointer-events="none" class="plan-label"><rect x="-14.400000000000002" y="-7.488000000000001" width="28.800000000000004" height="14.976000000000003" rx="7.488000000000001" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.600000000000001" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">러그</text></g></g></g><path class="plan-walk" d="M57.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M57.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M47.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M37.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M27.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M77.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M67.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M87.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 340a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 350a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 360a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M97.8 370a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M107.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M117.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M127.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M137.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M147.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 90a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 100a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 110a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 120a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 130a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 140a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 150a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 160a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 170a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 180a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 190a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 200a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 210a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 220a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M157.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 330a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 320a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M167.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M177.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M187.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M197.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M207.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M217.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M227.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 230a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 240a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 250a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 260a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 270a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 280a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 290a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 300a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0M237.8 310a2.2 2.2 0 1 0 4.4 0a2.2 2.2 0 1 0 -4.4 0" style="fill:var(--plan-walk, #4f977c)" fill-opacity="0.3" pointer-events="none"></path><g class="plan-item" tabindex="0" role="button" data-uid="bed" aria-pressed="false" aria-label="슈퍼싱글 침대. 방향키로 옮기고 R로 돌려요"><g transform="translate(190 0) rotate(0)"><g class="symbol symbol-bed" data-kind="bed"><rect width="110" height="200" rx="3" fill="#bea386" stroke="#806c58" stroke-width="1.2" vector-effect="non-scaling-stroke"></rect><rect width="110" height="9" rx="2" fill="#a08970" stroke="#806c58" stroke-width="1" vector-effect="non-scaling-stroke"></rect><rect x="3.3" y="10" width="103.4" height="186.7" rx="4" fill="#f2ede5" stroke="#9e978f" stroke-width="1" vector-effect="non-scaling-stroke"></rect><g><rect x="19" y="16.3" width="72" height="34" rx="7" fill="#fffdf9" stroke="#9e978f" stroke-width="1" vector-effect="non-scaling-stroke"></rect><path d="M33.4 33.3h43.199999999999996" fill="none" stroke="#9e978f" stroke-width="0.8" stroke-opacity="0.3" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></g><path d="M3.3 55.3H106.7V192.7Q106.7 196.7 102.7 196.7H7.3Q3.3 196.7 3.3 192.7Z" fill="#dccfbb" stroke="#918677" stroke-width="1" vector-effect="non-scaling-stroke"></path><rect x="3.3" y="55.3" width="103.4" height="18" fill="#e9e1d5" stroke="#918677" stroke-width="1" vector-effect="non-scaling-stroke"></rect><path d="M106.7 73.3L79.7 73.3L106.7 100.3Z" fill="#f2ede5" stroke="#918677" stroke-width="1" vector-effect="non-scaling-stroke"></path><path d="M33 116.71Q55 125.392 68.2 116.71M22 167.76Q49.5 159.07799999999997 77 167.76" fill="none" stroke="#918677" stroke-width="0.8" stroke-opacity="0.28" stroke-linecap="round" vector-effect="non-scaling-stroke"></path></g><g transform="translate(55 100) rotate(0)" pointer-events="none" class="plan-label"><rect x="-35.040000000000006" y="-7.488000000000001" width="70.08000000000001" height="14.976000000000003" rx="7.488000000000001" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.600000000000001" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">슈퍼싱글 침대</text></g></g></g><g class="plan-item is-selected" tabindex="0" role="button" data-uid="desk" aria-pressed="true" aria-label="책상. 방향키로 옮기고 R로 돌려요"><g transform="translate(50 0) rotate(0)"><rect class="plan-clear" x="0" y="60" width="120" height="60" rx="3" style="fill:var(--plan-select, #1f6650);stroke:var(--plan-select, #1f6650)" fill-opacity="0.07" stroke-opacity="0.7" stroke-width="1" stroke-dasharray="3 3" pointer-events="none" vector-effect="non-scaling-stroke"></rect><g class="symbol symbol-desk" data-kind="desk"><g><rect x="37" y="51" width="46" height="46" rx="11.04" fill="#afa28e" stroke="#776c5c" stroke-width="1" vector-effect="non-scaling-stroke"></rect><rect x="39.760000000000005" y="87.80000000000001" width="40.48" height="11.04" rx="5.52" fill="#9a8d7b" stroke="#776c5c" stroke-width="1" vector-effect="non-scaling-stroke"></rect></g><rect width="120" height="60" rx="2.5" fill="#aa8a67" stroke="#745e46" stroke-width="1.2" vector-effect="non-scaling-stroke"></rect><rect x="1.6" y="1.6" width="116.8" height="56.8" rx="1.5" fill="none" stroke="#c4ad95" stroke-width="0.8" stroke-opacity="0.7" vector-effect="non-scaling-stroke"></rect><ellipse cx="60" cy="11.5" rx="8.568" ry="3.4" fill="#4a4b50"></ellipse><rect x="34.8" y="12" width="50.4" height="3.4" rx="1.4" fill="#2b2c30"></rect><rect x="35.8" y="14.6" width="48.4" height="0.8" fill="#8fb4c9" opacity="0.8"></rect><rect x="42" y="33.6" width="36" height="11.4" rx="1.6" fill="#f6f4ef" stroke="#958e84" stroke-width="1" vector-effect="non-scaling-stroke"></rect><path d="M44 37.704h32M44 41.124h32" fill="none" stroke="#958e84" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></path><ellipse cx="86" cy="39.300000000000004" rx="2.8" ry="4.2" fill="#f6f4ef" stroke="#958e84" stroke-width="1" vector-effect="non-scaling-stroke"></ellipse><g><circle cx="15.600000000000001" cy="19.2" r="4" fill="#fbfaf7" stroke="#999289" stroke-width="1" vector-effect="non-scaling-stroke"></circle><circle cx="15.600000000000001" cy="19.2" r="2.48" fill="#7a5a44"></circle></g><rect x="-3" y="-3" width="126" height="66" rx="6" fill="none" style="stroke:var(--plan-select, #1f6650)" stroke-opacity="0.22" stroke-width="7" vector-effect="non-scaling-stroke"></rect><rect class="symbol-outline" x="-3" y="-3" width="126" height="66" rx="6" fill="none" style="stroke:var(--plan-select, #1f6650)" stroke-width="2" vector-effect="non-scaling-stroke"></rect><path d="M55.5 66L60 70.5L64.5 66Z" style="fill:var(--plan-select, #1f6650)"></path></g><g transform="translate(60 30) rotate(0)" pointer-events="none" class="plan-label"><rect x="-14.400000000000002" y="-7.488000000000001" width="28.800000000000004" height="14.976000000000003" rx="7.488000000000001" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.600000000000001" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">책상</text></g></g></g><g class="plan-item" tabindex="0" role="button" data-uid="plant" aria-pressed="false" aria-label="화분. 방향키로 옮기고 R로 돌려요"><g transform="translate(4 4) rotate(0)"><g class="symbol symbol-plant" data-kind="plant"><g transform="translate(20 20)"><circle r="10" fill="#9f7b50" stroke="#6e5538" stroke-width="1" vector-effect="non-scaling-stroke"></circle><g transform="rotate(14)"><path d="M0 0C5.630380520923063 -5.630380520923063 15.014348055794835 -4.50430441673845 18.767935069743544 0C15.014348055794835 4.50430441673845 5.630380520923063 5.630380520923063 0 0Z" fill="#4f7f52" stroke="#364c32" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M2.4 0H16" stroke="#2f5236" stroke-opacity="0.45" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g><g transform="rotate(65.42857142857143)"><path d="M0 0C5.609006403216335 -5.609006403216335 14.957350408576895 -4.4872051225730685 18.696688010721118 0C14.957350408576895 4.4872051225730685 5.609006403216335 5.609006403216335 0 0Z" fill="#6b9a63" stroke="#364c32" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M2.4 0H16" stroke="#2f5236" stroke-opacity="0.45" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g><g transform="rotate(116.85714285714286)"><path d="M0 0C5.874534018996928 -5.874534018996928 15.665424050658476 -4.699627215197543 19.581780063323095 0C15.665424050658476 4.699627215197543 5.874534018996928 5.874534018996928 0 0Z" fill="#3f6b45" stroke="#364c32" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M2.4 0H16" stroke="#2f5236" stroke-opacity="0.45" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g><g transform="rotate(168.28571428571428)"><path d="M0 0C5.881362634291873 -5.881362634291873 15.683633691444994 -4.705090107433498 19.60454211430624 0C15.683633691444994 4.705090107433498 5.881362634291873 5.881362634291873 0 0Z" fill="#4f7f52" stroke="#364c32" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M2.4 0H16" stroke="#2f5236" stroke-opacity="0.45" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g><g transform="rotate(219.71428571428572)"><path d="M0 0C5.788839319595717 -5.788839319595717 15.436904852255248 -4.631071455676574 19.29613106531906 0C15.436904852255248 4.631071455676574 5.788839319595717 5.788839319595717 0 0Z" fill="#6b9a63" stroke="#364c32" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M2.4 0H16" stroke="#2f5236" stroke-opacity="0.45" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g><g transform="rotate(271.14285714285717)"><path d="M0 0C5.613923068922667 -5.613923068922667 14.970461517127115 -4.491138455138134 18.713076896408893 0C14.970461517127115 4.491138455138134 5.613923068922667 5.613923068922667 0 0Z" fill="#3f6b45" stroke="#364c32" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M2.4 0H16" stroke="#2f5236" stroke-opacity="0.45" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g><g transform="rotate(322.57142857142856)"><path d="M0 0C5.464971970026454 -5.464971970026454 14.57325858673721 -4.371977576021163 18.216573233421514 0C14.57325858673721 4.371977576021163 5.464971970026454 5.464971970026454 0 0Z" fill="#4f7f52" stroke="#364c32" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M2.4 0H16" stroke="#2f5236" stroke-opacity="0.45" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g><path d="M0 0C3.3600000000000003 -3.3600000000000003 8.96 -2.688 11.200000000000001 0C8.96 2.688 3.3600000000000003 3.3600000000000003 0 0Z" transform="rotate(50)" fill="#82ad74" stroke="#3f583a" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M0 0C3.3600000000000003 -3.3600000000000003 8.96 -2.688 11.200000000000001 0C8.96 2.688 3.3600000000000003 3.3600000000000003 0 0Z" transform="rotate(122)" fill="#82ad74" stroke="#3f583a" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M0 0C3.3600000000000003 -3.3600000000000003 8.96 -2.688 11.200000000000001 0C8.96 2.688 3.3600000000000003 3.3600000000000003 0 0Z" transform="rotate(194)" fill="#82ad74" stroke="#3f583a" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M0 0C3.3600000000000003 -3.3600000000000003 8.96 -2.688 11.200000000000001 0C8.96 2.688 3.3600000000000003 3.3600000000000003 0 0Z" transform="rotate(266)" fill="#82ad74" stroke="#3f583a" stroke-width="0.7" vector-effect="non-scaling-stroke"></path><path d="M0 0C3.3600000000000003 -3.3600000000000003 8.96 -2.688 11.200000000000001 0C8.96 2.688 3.3600000000000003 3.3600000000000003 0 0Z" transform="rotate(338)" fill="#82ad74" stroke="#3f583a" stroke-width="0.7" vector-effect="non-scaling-stroke"></path></g></g><g transform="translate(20 20) rotate(0)" pointer-events="none" class="plan-label"><rect x="-14.400000000000002" y="-7.488000000000001" width="28.800000000000004" height="14.976000000000003" rx="7.488000000000001" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.600000000000001" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">화분</text></g></g></g><g class="plan-item" tabindex="0" role="button" data-uid="piano" aria-pressed="false" aria-label="전자피아노. 방향키로 옮기고 R로 돌려요"><g transform="translate(0 280) rotate(270)"><g class="symbol symbol-piano" data-kind="piano"><rect x="35" y="43" width="60" height="28" rx="4" fill="#908778" stroke="#7e7567" stroke-width="1" vector-effect="non-scaling-stroke"></rect><rect width="130" height="35" rx="2.5" fill="#2f2d2c" stroke="#696867" stroke-width="1.2" vector-effect="non-scaling-stroke"></rect><path d="M41.6 8.4H88.4" stroke="#696867" stroke-width="1.4" stroke-linecap="round" stroke-opacity="0.7" vector-effect="non-scaling-stroke"></path><rect x="3.9" y="20.299999999999997" width="122.2" height="12.6" rx="0.8" fill="#f8f6f1" stroke="#8f887e" stroke-width="0.8" vector-effect="non-scaling-stroke"></rect><path d="M8.264285714285714 20.299999999999997v12.6M12.62857142857143 20.299999999999997v12.6M16.992857142857144 20.299999999999997v12.6M21.357142857142858 20.299999999999997v12.6M25.72142857142857 20.299999999999997v12.6M30.08571428571429 20.299999999999997v12.6M34.45 20.299999999999997v12.6M38.81428571428572 20.299999999999997v12.6M43.17857142857143 20.299999999999997v12.6M47.542857142857144 20.299999999999997v12.6M51.90714285714286 20.299999999999997v12.6M56.27142857142858 20.299999999999997v12.6M60.63571428571429 20.299999999999997v12.6M65.00000000000001 20.299999999999997v12.6M69.36428571428573 20.299999999999997v12.6M73.72857142857144 20.299999999999997v12.6M78.09285714285716 20.299999999999997v12.6M82.45714285714287 20.299999999999997v12.6M86.82142857142858 20.299999999999997v12.6M91.1857142857143 20.299999999999997v12.6M95.55000000000001 20.299999999999997v12.6M99.91428571428573 20.299999999999997v12.6M104.27857142857144 20.299999999999997v12.6M108.64285714285717 20.299999999999997v12.6M113.00714285714288 20.299999999999997v12.6M117.3714285714286 20.299999999999997v12.6M121.73571428571431 20.299999999999997v12.6" stroke="#bdb7ab" stroke-width="0.6" vector-effect="non-scaling-stroke"></path><rect x="6.955" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="11.319285714285716" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="20.047857142857143" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="24.412142857142857" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="28.776428571428575" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="37.505" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="41.869285714285716" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="50.597857142857144" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="54.962142857142865" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="59.32642857142858" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="68.055" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="72.41928571428572" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="81.14785714285715" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="85.51214285714286" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="89.87642857142858" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="98.605" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="102.96928571428572" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="111.69785714285716" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="116.06214285714287" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect><rect x="120.42642857142859" y="20.299999999999997" width="2.6185714285714288" height="7.56" fill="#25221f"></rect></g><g transform="translate(65 17.5) rotate(-360)" pointer-events="none" class="plan-label"><rect x="-28.800000000000004" y="-7.488000000000001" width="57.60000000000001" height="14.976000000000003" rx="7.488000000000001" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.600000000000001" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">전자피아노</text></g></g></g><g class="plan-item" tabindex="0" role="button" data-uid="book" aria-pressed="false" aria-label="책장. 방향키로 옮기고 R로 돌려요"><g transform="translate(300 222) rotate(90)"><g class="symbol symbol-bookshelf" data-kind="bookshelf"><rect width="80" height="30" rx="2" fill="#b09372" stroke="#78634c" stroke-width="1.2" vector-effect="non-scaling-stroke"></rect><rect x="2.5" y="2.5" width="75" height="26" fill="#c8b39c" stroke="#867665" stroke-width="1" vector-effect="non-scaling-stroke"></rect><rect x="7.251902604615315" y="3" width="3.1450320160816774" height="19.058997224307458" rx="0.5" fill="#efeae0" stroke="#9c968c" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="10.896934620696992" y="3" width="4.472670094984641" height="18.385894154902925" rx="0.5" fill="#efeae0" stroke="#9c968c" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="20.876417887140995" y="3" width="4.044196597978589" height="19.391022575534006" rx="0.5" fill="#7d8b5a" stroke="#5a5e3e" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="25.420614485119586" y="3" width="3.1696153446133395" height="23.67378731354671" rx="0.5" fill="#a39785" stroke="#706557" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="29.090229829732927" y="3" width="2.4248598501322705" height="20.698562054108116" rx="0.5" fill="#d8c9b9" stroke="#8f8275" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="32.0150896798652" y="3" width="5.085519653633673" height="21.477620944082638" rx="0.5" fill="#d8c9b9" stroke="#8f8275" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="41" y="3" width="4.174794791318709" height="18.537218955070657" rx="0.5" fill="#7d8b5a" stroke="#5a5e3e" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="45.67479479131871" y="3" width="4.411686862216447" height="20.471211080908105" rx="0.5" fill="#b1b99c" stroke="#787965" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="50.58648165353516" y="3" width="2.989817990057054" height="19.824974407430055" rx="0.5" fill="#7d8b5a" stroke="#5a5e3e" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="54.076299643592215" y="3" width="3.017502369553404" height="21.27371462941388" rx="0.5" fill="#7d8b5a" stroke="#5a5e3e" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="57.59380201314562" y="3" width="3.7344998983313413" height="18.499865190574347" rx="0.5" fill="#a39785" stroke="#706557" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="61.82830191147696" y="3" width="3.1868885513482383" height="17.663832153177427" rx="0.5" fill="#d7c9b3" stroke="#8e8272" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="65.5151904628252" y="3" width="3.356770417570806" height="22.651260117957243" rx="0.5" fill="#7d8b5a" stroke="#5a5e3e" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="69.371960880396" y="3" width="2.7932447081344436" height="18.317433579010512" rx="0.5" fill="#7d8b5a" stroke="#5a5e3e" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="72.66520558853044" y="3" width="3.3347944114695593" height="19.602011887742954" rx="0.5" fill="#7d8b5a" stroke="#5a5e3e" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect><rect x="39.1" y="2.5" width="1.8" height="26" fill="#b09372" stroke="#78634c" stroke-width="0.7" vector-effect="non-scaling-stroke"></rect></g><g transform="translate(40 15) rotate(-180)" pointer-events="none" class="plan-label"><rect x="-14.400000000000002" y="-7.488000000000001" width="28.800000000000004" height="14.976000000000003" rx="7.488000000000001" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.600000000000001" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">책장</text></g></g></g><g class="plan-item" tabindex="0" role="button" data-uid="ward" aria-pressed="false" aria-label="옷장 (주의). 방향키로 옮기고 R로 돌려요"><g transform="translate(300 400) rotate(180)"><rect class="plan-clear" x="0" y="60" width="100" height="50" rx="3" style="fill:var(--warn, #c27a00);stroke:var(--warn, #c27a00)" fill-opacity="0.07" stroke-opacity="0.7" stroke-width="1" stroke-dasharray="3 3" pointer-events="none" vector-effect="non-scaling-stroke"></rect><g class="symbol symbol-wardrobe" data-kind="wardrobe"><rect width="100" height="60" rx="2" fill="#9c8165" stroke="#6c5945" stroke-width="1.2" vector-effect="non-scaling-stroke"></rect><rect x="2.5" y="2.5" width="95" height="53" rx="1" fill="#b8a490" stroke="#7c6d5e" stroke-width="1" vector-effect="non-scaling-stroke"></rect><line x1="9.872825549440085" y1="10.799999999999997" x2="10.127174450559915" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="18.00620004393007" y1="10.799999999999997" x2="17.99379995606993" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="24.349307721459166" y1="10.799999999999997" x2="27.650692278540834" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="32.306697162018715" y1="10.799999999999997" x2="35.693302837981285" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="40.88404264572272" y1="10.799999999999997" x2="43.11595735427728" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="49.97552004992255" y1="10.799999999999997" x2="50.02447995007745" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="58.904974907034926" y1="10.799999999999997" x2="57.095025092965074" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="63.58447147226518" y1="10.799999999999997" x2="68.41552852773482" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="72.72105610043425" y1="10.799999999999997" x2="75.27894389956575" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="80.42541479595387" y1="10.799999999999997" x2="83.57458520404613" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="90.1999071484088" y1="10.799999999999997" x2="89.8000928515912" y2="42" fill="none" stroke="#7c6d5e" stroke-width="0.8" stroke-opacity="0.5" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><line x1="5" x2="95" y1="26.4" y2="26.4" stroke="#7c6d5e" stroke-width="1.6" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><g><rect y="55.5" width="100" height="4.5" rx="1" fill="#91775d" stroke="#6c5945" stroke-width="1" vector-effect="non-scaling-stroke"></rect><line x1="50" x2="50" y1="55.5" y2="60" fill="none" stroke="#6c5945" stroke-width="0.8" stroke-opacity="0.9" stroke-linecap="round" vector-effect="non-scaling-stroke"></line><rect x="22" y="59.4" width="6" height="1.6" rx="0.8" fill="#63513f"></rect><rect x="72" y="59.4" width="6" height="1.6" rx="0.8" fill="#63513f"></rect></g><rect x="-1" y="-1" width="102" height="62" rx="4" style="fill:var(--warn, #c27a00);stroke:var(--warn, #c27a00)" fill-opacity="0.14" stroke-width="1.6" stroke-dasharray="6 3" vector-effect="non-scaling-stroke"></rect></g><g transform="translate(50 30) rotate(-180)" pointer-events="none" class="plan-label"><rect x="-14.400000000000002" y="-7.488000000000001" width="28.800000000000004" height="14.976000000000003" rx="7.488000000000001" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.600000000000001" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">옷장</text><g transform="translate(-18.040000000000003 0)"><circle r="5.2" style="fill:var(--warn, #c27a00)" stroke="#fff" stroke-width="1.5" vector-effect="non-scaling-stroke"></circle><text text-anchor="middle" dominant-baseline="central" font-size="7.800000000000001" font-weight="800" fill="#fff">!</text></g></g></g></g><g class="plan-item" tabindex="0" role="button" data-uid="mirror" aria-pressed="false" aria-label="전신거울. 방향키로 옮기고 R로 돌려요"><g transform="translate(180 400) rotate(180)"><g class="symbol symbol-mirror" data-kind="mirror"><rect width="50" height="36" rx="3" fill="#b09372" stroke="#78634c" stroke-width="1.2" vector-effect="non-scaling-stroke"></rect><rect x="3" y="3" width="44" height="30" rx="1" fill="#dcebf1" stroke="#7b8486" stroke-width="0.8" vector-effect="non-scaling-stroke"></rect><path d="M12 25.919999999999998L22 10.080000000000002M19 25.919999999999998L26 15.12" stroke="#fff" stroke-width="1.4" stroke-linecap="round" stroke-opacity="0.9" vector-effect="non-scaling-stroke"></path><rect x="-1.5" y="-1.5" width="53" height="39" rx="4" fill="none" style="stroke:var(--warn, #c27a00)" stroke-width="1.2" stroke-dasharray="2 3" stroke-linecap="round" vector-effect="non-scaling-stroke"></rect></g><g transform="translate(25 18) rotate(-180)" pointer-events="none" class="plan-label"><rect x="-23" y="-7.175999999999999" width="46" height="14.351999999999999" rx="7.175999999999999" fill="#fff" fill-opacity="0.92"></rect><text text-anchor="middle" dominant-baseline="central" font-size="9.2" font-weight="650" style="fill:var(--plan-ink, #2a2520);letter-spacing:-0.02em">전신거울</text></g></g></g></svg>
+<!-- /gen:plan -->
+
+        <!-- 고른 가구 도구 막대. 위치는 고른 가구의 화면 좌표로 계산한다(맨 아래 스크립트 참고) -->
+        <div class="toolbar" role="toolbar" aria-label="책상 옮기기">
+          <span class="toolbar-name">책상</span>
+          <span class="toolbar-sep"></span>
+          <button type="button" class="tooltip" data-tip="왼쪽으로 5cm" aria-label="왼쪽으로 옮기기"><svg class="icon"><use href="#i-left" /></svg></button>
+          <button type="button" class="tooltip" data-tip="위로 5cm" aria-label="위로 옮기기"><svg class="icon"><use href="#i-up" /></svg></button>
+          <button type="button" class="tooltip" data-tip="아래로 5cm" aria-label="아래로 옮기기"><svg class="icon"><use href="#i-down" /></svg></button>
+          <button type="button" class="tooltip" data-tip="오른쪽으로 5cm" aria-label="오른쪽으로 옮기기"><svg class="icon"><use href="#i-right" /></svg></button>
+          <span class="toolbar-sep"></span>
+          <button type="button" aria-label="90도 돌리기"><svg class="icon"><use href="#i-rotate" /></svg>돌리기</button>
+          <button type="button" class="is-danger tooltip" data-tip="이 가구 빼기" aria-label="책상 빼기"><svg class="icon"><use href="#i-trash" /></svg></button>
+        </div>
+
+        <!-- 배치안 작은 그림 -->
+        <div class="variant-rail" role="group" aria-label="배치안 고르기">
+          <button class="variant-thumb" type="button" aria-pressed="true" aria-label="배치안 1, 86점">
+<!-- gen:thumb1 -->
+<svg viewBox="-8 -8 316 416" aria-hidden="true"><rect x="-8" y="-8" width="316" height="416" rx="10" fill="#2e2a25"></rect><rect width="300" height="400" fill="#e1cfb8"></rect><rect x="50" y="105" width="130" height="190" rx="5" fill="#e5dccd" stroke="#a49b8e" stroke-width="3" opacity="0.7"></rect><rect x="190" y="0" width="110" height="200" rx="5" fill="#bea386" stroke="#8a7660" stroke-width="3" opacity="1"></rect><rect x="50" y="0" width="120" height="60" rx="5" fill="#aa8a67" stroke="#7d654b" stroke-width="3" opacity="1"></rect><rect x="4" y="4" width="40" height="40" rx="5" fill="#8a9361" stroke="#686b47" stroke-width="3" opacity="1"></rect><rect x="0" y="150" width="35" height="130" rx="5" fill="#695743" stroke="#534434" stroke-width="3" opacity="1"></rect><rect x="270" y="222" width="30" height="80" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect><rect x="200" y="340" width="100" height="60" rx="5" fill="#9c8165" stroke="#745f4a" stroke-width="3" opacity="1"></rect><rect x="130" y="364" width="50" height="36" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect></svg>
+<!-- /gen:thumb1 -->
+            <span>1안 · 86</span></button>
+          <button class="variant-thumb" type="button" aria-pressed="false" aria-label="배치안 2, 82점">
+<!-- gen:thumb2 -->
+<svg viewBox="-8 -8 316 416" aria-hidden="true"><rect x="-8" y="-8" width="316" height="416" rx="10" fill="#2e2a25"></rect><rect width="300" height="400" fill="#e1cfb8"></rect><rect x="60" y="150" width="130" height="190" rx="5" fill="#e5dccd" stroke="#a49b8e" stroke-width="3" opacity="0.7"></rect><rect x="0" y="0" width="110" height="200" rx="5" fill="#bea386" stroke="#8a7660" stroke-width="3" opacity="1"></rect><rect x="180" y="0" width="120" height="60" rx="5" fill="#aa8a67" stroke="#7d654b" stroke-width="3" opacity="1"></rect><rect x="265" y="90" width="35" height="130" rx="5" fill="#695743" stroke="#534434" stroke-width="3" opacity="1"></rect><rect x="270" y="240" width="30" height="80" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect><rect x="200" y="340" width="100" height="60" rx="5" fill="#9c8165" stroke="#745f4a" stroke-width="3" opacity="1"></rect><rect x="130" y="364" width="50" height="36" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect><rect x="130" y="4" width="40" height="40" rx="5" fill="#8a9361" stroke="#686b47" stroke-width="3" opacity="1"></rect></svg>
+<!-- /gen:thumb2 -->
+            <span>2안 · 82</span></button>
+          <button class="variant-thumb" type="button" aria-pressed="false" aria-label="배치안 3, 79점">
+<!-- gen:thumb3 -->
+<svg viewBox="-8 -8 316 416" aria-hidden="true"><rect x="-8" y="-8" width="316" height="416" rx="10" fill="#2e2a25"></rect><rect width="300" height="400" fill="#e1cfb8"></rect><rect x="85" y="110" width="130" height="190" rx="5" fill="#e5dccd" stroke="#a49b8e" stroke-width="3" opacity="0.7"></rect><rect x="190" y="200" width="110" height="200" rx="5" fill="#bea386" stroke="#8a7660" stroke-width="3" opacity="1"></rect><rect x="150" y="0" width="120" height="60" rx="5" fill="#aa8a67" stroke="#7d654b" stroke-width="3" opacity="1"></rect><rect x="0" y="120" width="35" height="130" rx="5" fill="#695743" stroke="#534434" stroke-width="3" opacity="1"></rect><rect x="0" y="0" width="80" height="30" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect><rect x="240" y="60" width="60" height="100" rx="5" fill="#9c8165" stroke="#745f4a" stroke-width="3" opacity="1"></rect><rect x="130" y="364" width="50" height="36" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect><rect x="100" y="4" width="40" height="40" rx="5" fill="#8a9361" stroke="#686b47" stroke-width="3" opacity="1"></rect></svg>
+<!-- /gen:thumb3 -->
+            <span>3안 · 79</span></button>
+          <button class="variant-thumb" type="button" aria-pressed="false" aria-label="배치안 4, 71점">
+<!-- gen:thumb4 -->
+<svg viewBox="-8 -8 316 416" aria-hidden="true"><rect x="-8" y="-8" width="316" height="416" rx="10" fill="#2e2a25"></rect><rect width="300" height="400" fill="#e1cfb8"></rect><rect x="120" y="120" width="130" height="190" rx="5" fill="#e5dccd" stroke="#a49b8e" stroke-width="3" opacity="0.7"></rect><rect x="0" y="0" width="200" height="110" rx="5" fill="#bea386" stroke="#8a7660" stroke-width="3" opacity="1"></rect><rect x="170" y="0" width="120" height="60" rx="5" fill="#aa8a67" stroke="#7d654b" stroke-width="3" opacity="1"></rect><rect x="0" y="130" width="35" height="130" rx="5" fill="#695743" stroke="#534434" stroke-width="3" opacity="1"></rect><rect x="270" y="150" width="30" height="80" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect><rect x="200" y="340" width="100" height="60" rx="5" fill="#9c8165" stroke="#745f4a" stroke-width="3" opacity="1"></rect><rect x="130" y="364" width="50" height="36" rx="5" fill="#b09372" stroke="#816b53" stroke-width="3" opacity="1"></rect><rect x="256" y="240" width="40" height="40" rx="5" fill="#8a9361" stroke="#686b47" stroke-width="3" opacity="1"></rect></svg>
+<!-- /gen:thumb4 -->
+            <span>4안 · 71</span></button>
+        </div>
+      </div>
+
+      <div class="canvas-foot">
+        <span>가구를 끌어서 옮기고 <span class="kbd">R</span> 로 돌려요. 방향키 <span class="kbd">←</span><span class="kbd">→</span> 로 5cm씩 움직여요.</span>
+        <span class="grow"></span>
+        <span class="legend"><i class="legend-dot"></i>60cm 통로로 갈 수 있는 곳 (참고값)</span>
+      </div>
+    </section>
+
+    <!-- ───────── 오른쪽: 결과 ───────── -->
+    <aside class="panel panel-plain" aria-label="결과">
+      <div class="panel-body">
+
+        <section class="card card-hero" aria-labelledby="r1">
+          <div class="card-head"><h3 class="card-title" id="r1">배치 점수</h3><span class="badge badge-accent">배치안 1</span></div>
+          <div class="score">
+            <div class="gauge" role="img" aria-label="배치 점수 100점 만점에 86점">
+              <!-- 점수는 stroke-dasharray="점수 100" -->
+              <svg viewBox="0 0 100 100"><circle class="gauge-track" cx="50" cy="50" r="43" pathLength="100" /><circle class="gauge-value" cx="50" cy="50" r="43" pathLength="100" stroke-dasharray="86 100" /></svg>
+              <div class="gauge-num"><b>86</b><small>100점 만점</small></div>
+            </div>
+            <div class="score-text">
+              <p class="score-grade">아주 좋아요</p>
+              <p class="score-desc">통로가 넉넉하고 창가 빛을 잘 살린 배치예요.</p>
+            </div>
+          </div>
+          <div class="parts">
+            <div class="part"><div class="part-top"><span class="part-label">동선</span><span class="part-score"><b>23</b> / 25</span></div><div class="meter" style="--value:92"></div><p class="part-note">현관에서 모든 가구까지 60cm 통로로 갈 수 있어요.</p></div>
+            <div class="part"><div class="part-top"><span class="part-label">채광</span><span class="part-score"><b>18</b> / 20</span></div><div class="meter" style="--value:90"></div><p class="part-note">책상을 창가에 두어 낮에 밝아요.</p></div>
+            <div class="part"><div class="part-top"><span class="part-label">사용 공간</span><span class="part-score"><b>15</b> / 20</span></div><div class="meter is-warn" style="--value:75"></div><p class="part-note">옷장 앞이 조금 좁아요.</p></div>
+            <div class="part"><div class="part-top"><span class="part-label">수면</span><span class="part-score"><b>17</b> / 20</span></div><div class="meter" style="--value:85"></div><p class="part-note">침대 머리가 문에서 바로 보이지 않아요.</p></div>
+            <div class="part"><div class="part-top"><span class="part-label">균형</span><span class="part-score"><b>13</b> / 15</span></div><div class="meter" style="--value:87"></div><p class="part-note">큰 가구가 한쪽에 몰리지 않았어요.</p></div>
+          </div>
+        </section>
+
+        <section class="card" aria-labelledby="r2">
+          <div class="card-head"><h3 class="card-title" id="r2">배치 검사</h3><span class="badge badge-warn">주의 1</span></div>
+          <ul class="issues">
+            <li><button class="issue is-warn" type="button"><span class="issue-icon" aria-hidden="true">!</span><span><b>옷장</b> 앞 공간에 책장이 12cm 걸쳐요. 문을 열 때 닿을 수 있어요.</span></button></li>
+          </ul>
+          <div class="demo-row" style="margin-top:10px">
+            <span class="badge badge-ok"><svg class="icon"><use href="#i-check" /></svg>겹치는 가구 없음</span>
+            <span class="badge badge-ok"><svg class="icon"><use href="#i-check" /></svg>문 여는 공간 확보</span>
+            <span class="badge badge-ok"><svg class="icon"><use href="#i-check" /></svg>통로 이어짐</span>
+          </div>
+          <p class="note">통로 60cm는 편하게 지나다니기 위한 참고값이에요.</p>
+        </section>
+
+        <section class="card" aria-labelledby="r3">
+          <div class="card-head"><h3 class="card-title" id="r3">예상 비용</h3><span class="card-sub">시연용 예상 가격</span></div>
+          <div class="cost">
+            <div class="cost-row"><span class="cost-name">슈퍼싱글 침대</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">320,000원</span></div>
+            <div class="cost-row"><span class="cost-name">책상</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">120,000원</span></div>
+            <div class="cost-row"><span class="cost-name">옷장</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">200,000원</span></div>
+            <div class="cost-row"><span class="cost-name">책장</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">70,000원</span></div>
+            <div class="cost-row"><span class="cost-name">전자피아노 <span class="badge badge-ai">AI 추정</span></span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">390,000원</span></div>
+            <div class="cost-row"><span class="cost-name">러그</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">59,000원</span></div>
+            <div class="cost-row"><span class="cost-name">전신거울</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">39,000원</span></div>
+            <div class="cost-row"><span class="cost-name">화분</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">29,000원</span></div>
+          </div>
+          <div class="cost cost-group">
+            <div class="sub-label" style="margin:8px 0 2px">내추럴 스타일 추천 소품</div>
+            <div class="cost-row"><span class="cost-name">린넨 침구 세트</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">59,000원</span></div>
+            <div class="cost-row"><span class="cost-name">우드 무드등</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">29,000원</span></div>
+            <div class="cost-row"><span class="cost-name">라탄 바구니</span><a class="btn btn-link" href="#" target="_blank" rel="noopener">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a><span class="cost-price">25,000원</span></div>
+          </div>
+          <div class="cost-sum">
+            <div class="cost-sum-row cost-total"><span>합계</span><b>1,340,000원</b></div>
+            <div class="progress" style="--value:89" role="img" aria-label="예산의 89%를 썼어요"></div>
+            <div class="cost-sum-row"><span>예산 1,500,000원</span><span class="cost-left">160,000원 남아요</span></div>
+          </div>
+          <p class="note">시연용 예상 가격이에요. 실제 판매 가격과 다를 수 있어요.</p>
+        </section>
+
+        <section class="card" aria-labelledby="r4">
+          <div class="card-head"><h3 class="card-title" id="r4">색상 팔레트</h3><span class="badge">내추럴</span></div>
+          <div class="swatches">
+            <div class="swatch"><div class="swatch-color" style="background:#f3ecdf"></div><div class="swatch-role">벽</div><div class="swatch-name">아이보리</div><div class="swatch-hex">#f3ecdf</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#c8a77e"></div><div class="swatch-role">바닥</div><div class="swatch-name">오크 마루</div><div class="swatch-hex">#c8a77e</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#b08a5e"></div><div class="swatch-role">메인 가구</div><div class="swatch-name">원목 우드</div><div class="swatch-hex">#b08a5e</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#ddd0b8"></div><div class="swatch-role">패브릭</div><div class="swatch-name">베이지 린넨</div><div class="swatch-hex">#ddd0b8</div></div>
+            <div class="swatch"><div class="swatch-color" style="background:#7d8b5a"></div><div class="swatch-role">포인트</div><div class="swatch-name">올리브 그린</div><div class="swatch-hex">#7d8b5a</div></div>
+          </div>
+          <dl class="facts">
+            <dt>마감재</dt><dd>원목, 라탄, 린넨, 테라코타 화분</dd>
+            <dt>분위기</dt><dd>햇살이 드는 오후처럼 따뜻하고 편안해요.</dd>
+          </dl>
+        </section>
+
+        <section class="card" aria-labelledby="r5">
+          <div class="card-head"><h3 class="card-title" id="r5">AI 추천 설명</h3><span class="badge badge-ai"><svg class="icon"><use href="#i-sparkle" /></svg>AI</span></div>
+          <p class="advice-summary">큰 가구를 벽에 붙이고 가운데를 비워, 3m × 4m 방에서도 답답하지 않게 놓았어요.</p>
+          <ul class="advice-list">
+            <li><b>침대</b>는 창 옆 안쪽 구석에 두어 문을 열어도 바로 보이지 않아요.</li>
+            <li><b>책상</b>은 창 아래에 두어 낮에는 조명 없이도 밝아요.</li>
+            <li><b>옷장</b>은 현관 가까이에 두어 나가기 전에 옷을 챙기기 편해요.</li>
+            <li><b>전자피아노</b>는 왼쪽 벽에 붙여 의자를 빼도 통로가 60cm 넘게 남아요.</li>
+          </ul>
+          <div class="advice-tip"><span class="advice-tip-title">스타일링 팁</span>러그와 침구를 베이지 린넨으로 맞추고, 올리브 그린 쿠션이나 화분으로 포인트를 주면 내추럴 분위기가 살아나요.</div>
+        </section>
+
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- ═════════ 아래쪽: 상태 모음 (통합 담당 참고용) ═════════ -->
+<div class="extras">
+  <h2>상태 모음</h2>
+  <p>위 화면에 다 담지 못한 상태들이에요. 구조와 클래스를 그대로 가져다 쓰면 돼요.</p>
+
+  <h3>DWG 불러오기 모달 — 실제로는 .modal-backdrop 안에 넣어 화면 가운데에 띄워요</h3>
+  <div class="demo-wide">
+    <div class="modal demo-modal" role="dialog" aria-labelledby="dwg-title">
+      <div class="modal-head">
+        <h2 class="modal-title" id="dwg-title">DWG 도면에서 방 가져오기</h2>
+        <span class="badge">2층주택_평면도.dwg · mm</span>
+        <button class="btn btn-ghost btn-icon" type="button" aria-label="닫기"><svg class="icon"><use href="#i-x" /></svg></button>
+      </div>
+      <div class="modal-body">
+        <div class="dwg-body">
+          <div class="dwg-preview" role="img" aria-label="도면 미리보기. 방 후보 3개 가운데 1번이 선택됨">
+            <svg viewBox="0 0 400 300" fill="none" stroke="#aeb4bd" stroke-width="1">
+              <path d="M30 30h340v240H30zM30 150h150M180 30v240M180 110h190M270 110v160M34 34h332v232H34z" stroke-opacity=".8" />
+              <path d="M100 150a30 30 0 0 1 30 30M180 70a26 26 0 0 0 26 26M270 190a26 26 0 0 0-26 26" stroke-opacity=".5" />
+              <path d="M70 30h70M230 30h90M370 160v60" stroke="#7fb4d6" stroke-width="3" />
+              <rect x="186" y="116" width="78" height="148" fill="#4f977c" fill-opacity=".28" stroke="#8abca5" stroke-width="2" />
+              <rect x="36" y="156" width="138" height="108" stroke="#8abca5" stroke-opacity=".6" stroke-dasharray="4 4" />
+              <rect x="276" y="116" width="88" height="148" stroke="#8abca5" stroke-opacity=".6" stroke-dasharray="4 4" />
+              <g fill="#fff" stroke="none" font-size="12" font-weight="700" font-family="inherit"><text x="225" y="194" text-anchor="middle">① 방 2</text><text x="105" y="214" text-anchor="middle" fill-opacity=".6">②</text><text x="320" y="194" text-anchor="middle" fill-opacity=".6">③</text></g>
+            </svg>
+          </div>
+          <div class="stack">
+            <div class="sub-label" style="margin-top:0">방 후보 <span class="badge">3</span></div>
+            <button class="room-option" type="button" aria-pressed="true"><span class="step-num">1</span><span class="grow"><b>방 2</b><br /><span class="muted num">312 × 420cm · 문 1 · 창 1</span></span></button>
+            <button class="room-option" type="button" aria-pressed="false"><span class="step-num">2</span><span class="grow"><b>거실</b><br /><span class="muted num">552 × 432cm · 문 2 · 창 1</span></span></button>
+            <button class="room-option" type="button" aria-pressed="false"><span class="step-num">3</span><span class="grow"><b>방 1</b><br /><span class="muted num">352 × 420cm · 문 1 · 창 1</span></span></button>
+            <p class="field-hint">맞는 방이 없으면 도면 위에서 사각형을 끌어 직접 정할 수 있어요.</p>
+          </div>
+        </div>
+      </div>
+      <div class="modal-foot">
+        <span class="grow">원본 파일은 고치지 않아요. 네모난 방만 가져올 수 있어요.</span>
+        <button class="btn" type="button">취소</button>
+        <button class="btn btn-primary" type="button">이 방으로 설정</button>
+      </div>
+    </div>
+
+    <div class="stack" style="gap:16px">
+      <div class="dropzone">
+        <span class="empty-art" style="width:56px;height:56px;border-radius:18px;margin:0"><svg class="icon" style="width:24px;height:24px"><use href="#i-upload" /></svg></span>
+        <b style="color:var(--text)">DWG · DXF 파일을 여기에 끌어다 놓으세요</b>
+        <span class="field-hint">또는 <a href="#">파일 고르기</a> · 30MB까지</span>
+      </div>
+      <div class="card">
+        <div class="row"><span class="spinner" style="color:var(--accent-600)"></span><b>도면을 읽고 있어요…</b></div>
+        <div class="progress is-busy" style="margin-top:12px"></div>
+        <p class="note">큰 도면은 10초쯤 걸릴 수 있어요.</p>
+      </div>
+      <div class="alert alert-error" role="alert"><svg class="icon"><use href="#i-alert" /></svg><span><strong>도면을 읽지 못했어요.</strong> 파일이 DWG나 DXF가 맞는지 확인하고 다시 올려 주세요.</span></div>
+    </div>
+  </div>
+
+  <h3>비어 있을 때 · 불러오는 중</h3>
+  <div class="demo-grid">
+    <div class="demo-stage">
+      <div class="canvas-stage">
+        <div class="empty">
+          <span class="empty-art"><svg class="icon"><use href="#i-plan" /></svg></span>
+          <p class="empty-title">아직 놓은 가구가 없어요</p>
+          <p>왼쪽에 방과 가구를 적고 <b>배치 추천받기</b>를 눌러 보세요.</p>
+          <button class="btn btn-soft" type="button" style="margin-top:8px"><svg class="icon"><use href="#i-book" /></svg>예시로 바로 해 보기</button>
+        </div>
+      </div>
+    </div>
+    <div class="demo-stage">
+      <div class="canvas-stage">
+        <div class="empty" style="width:260px">
+          <span class="spinner" style="width:28px;height:28px;border-width:3px;color:var(--accent-600)"></span>
+          <p class="empty-title">배치를 찾고 있어요</p>
+          <div class="progress is-busy" style="width:100%"></div>
+          <p>벽, 창문, 통로를 따져 보는 중이에요.</p>
+        </div>
+      </div>
+    </div>
+    <div class="card" aria-busy="true">
+      <div class="card-head"><h3 class="card-title" style="margin:0;letter-spacing:-0.02em;font-size:var(--fs-lg);color:var(--text)">AI 추천 설명</h3><span class="badge">기본 설명</span></div>
+      <p class="advice-summary">큰 가구를 벽과 구석에 붙여 가운데에 60cm 넘는 통로를 남긴 배치예요.</p>
+      <div class="alert" style="margin-top:12px"><span class="spinner" style="margin-top:3px"></span><span>AI가 더 자세한 설명을 쓰고 있어요. 10~20초쯤 걸려요.</span></div>
+      <div style="margin-top:14px" aria-hidden="true">
+        <span class="skeleton" style="width:92%"></span><span class="skeleton" style="width:78%"></span><span class="skeleton" style="width:85%"></span><span class="skeleton" style="width:56%"></span>
+      </div>
+    </div>
+    <div class="card">
+      <div class="sub-label" style="margin-top:0">알아본 가구 <span class="badge">0</span></div>
+      <div class="empty" style="padding:18px;background:var(--surface-2);border-radius:var(--r-md)">
+        <p>아직 알아본 가구가 없어요.<br />위 칸에 가구 이름을 적어 주세요.</p>
+      </div>
+      <div class="spec" style="margin-top:8px" aria-busy="true">
+        <i class="spec-dot" style="background:var(--line-strong)"></i>
+        <div class="spec-main"><div class="spec-name"><span>캣타워</span><span class="badge badge-ai"><span class="spinner" style="width:9px;height:9px;border-width:1.5px"></span>AI가 찾는 중</span></div><span class="skeleton" style="width:110px;height:9px;margin-top:4px"></span></div>
+        <span class="spec-price muted">—</span>
+        <button class="btn btn-ghost btn-icon btn-sm" type="button" aria-label="캣타워 빼기"><svg class="icon"><use href="#i-x" /></svg></button>
+      </div>
+      <button class="btn btn-primary btn-lg btn-block is-loading" type="button" style="margin-top:12px"><span class="spinner"></span>배치를 찾는 중…</button>
+    </div>
+  </div>
+
+  <h3>오류 · 주의 · 문제 없음</h3>
+  <div class="demo-grid">
+    <div class="card">
+      <div class="card-head"><h3 class="card-title" style="margin:0;letter-spacing:-0.02em;font-size:var(--fs-lg);color:var(--text)">배치 검사</h3><span class="badge badge-error">오류 2</span><span class="badge badge-warn" style="margin-left:0">주의 1</span></div>
+      <ul class="issues">
+        <li><button class="issue is-error" type="button"><span class="issue-icon" aria-hidden="true">×</span><span><b>책상</b>과 <b>침대</b>가 20cm 겹쳐요.</span></button></li>
+        <li><button class="issue is-error" type="button"><span class="issue-icon" aria-hidden="true">×</span><span><b>옷장</b>이 현관문 여는 공간을 막아요.</span></button></li>
+        <li><button class="issue is-warn" type="button"><span class="issue-icon" aria-hidden="true">!</span><span><b>책장</b>이 창문을 30cm 가려요.</span></button></li>
+      </ul>
+      <p class="note">항목을 누르면 평면도에서 그 가구를 보여 줘요.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3 class="card-title" style="margin:0;letter-spacing:-0.02em;font-size:var(--fs-lg);color:var(--text)">배치 검사</h3><span class="badge badge-ok">문제 없음</span></div>
+      <div class="alert alert-ok"><svg class="icon"><use href="#i-check" /></svg><span><strong>잘 놓였어요.</strong> 겹치거나 문을 막는 가구가 없고, 현관에서 모든 가구까지 갈 수 있어요.</span></div>
+      <p class="note">통로 60cm는 편하게 지나다니기 위한 참고값이에요.</p>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3 class="card-title" style="margin:0;letter-spacing:-0.02em;font-size:var(--fs-lg);color:var(--text)">배치 점수</h3><span class="badge badge-error">고쳐 주세요</span></div>
+      <div class="score">
+        <div class="gauge is-error" role="img" aria-label="배치 점수 100점 만점에 42점"><svg viewBox="0 0 100 100"><circle class="gauge-track" cx="50" cy="50" r="43" pathLength="100" /><circle class="gauge-value" cx="50" cy="50" r="43" pathLength="100" stroke-dasharray="42 100" /></svg><div class="gauge-num"><b>42</b><small>100점 만점</small></div></div>
+        <div class="score-text"><p class="score-grade">손볼 곳이 있어요</p><p class="score-desc">겹친 가구를 옮기면 점수가 올라가요.</p></div>
+      </div>
+      <div class="parts"><div class="part"><div class="part-top"><span class="part-label">동선</span><span class="part-score"><b>8</b> / 25</span></div><div class="meter is-error" style="--value:32"></div><p class="part-note">옷장이 문 앞을 막아 통로가 끊겼어요.</p></div></div>
+    </div>
+    <div class="card">
+      <div class="card-head"><h3 class="card-title" style="margin:0;letter-spacing:-0.02em;font-size:var(--fs-lg);color:var(--text)">예상 비용</h3><span class="card-sub">예산을 넘었을 때</span></div>
+      <div class="cost-sum is-over" style="margin-top:0">
+        <div class="cost-sum-row cost-total"><span>합계</span><b>1,720,000원</b></div>
+        <div class="progress is-error" style="--value:100" role="img" aria-label="예산을 넘었어요"></div>
+        <div class="cost-sum-row"><span>예산 1,500,000원</span><span class="cost-left">220,000원 넘었어요</span></div>
+      </div>
+      <p class="note">가구를 빼거나 예산을 올려 보세요. 소품은 남은 예산 안에서만 추천해요.</p>
+      <div class="alert alert-warn" style="margin-top:12px"><svg class="icon"><use href="#i-alert" /></svg><span><strong>가구 1개를 놓지 못했어요.</strong> 2인 소파가 들어갈 자리가 없어요.</span></div>
+    </div>
+  </div>
+
+  <h3>기본 부품</h3>
+  <div class="card stack" style="gap:16px">
+    <div class="demo-row">
+      <button class="btn btn-primary" type="button">btn-primary</button>
+      <button class="btn" type="button">btn</button>
+      <button class="btn btn-dark" type="button">btn-dark</button>
+      <button class="btn btn-soft" type="button">btn-soft</button>
+      <button class="btn btn-ai" type="button"><svg class="icon"><use href="#i-sparkle" /></svg>btn-ai</button>
+      <button class="btn btn-ghost" type="button">btn-ghost</button>
+      <button class="btn btn-danger" type="button">btn-danger</button>
+      <button class="btn" type="button" disabled>disabled</button>
+      <button class="btn btn-icon tooltip" type="button" data-tip="말풍선(tooltip)" aria-label="돌리기"><svg class="icon"><use href="#i-rotate" /></svg></button>
+      <button class="btn btn-sm" type="button">btn-sm</button>
+      <button class="btn btn-primary btn-lg" type="button">btn-lg</button>
+      <a class="btn btn-link" href="#">오늘의집<svg class="icon"><use href="#i-ext" /></svg></a>
+    </div>
+    <div class="demo-row">
+      <span class="badge">badge</span><span class="badge badge-accent">badge-accent</span><span class="badge badge-ok">badge-ok</span><span class="badge badge-warn">badge-warn</span><span class="badge badge-error">badge-error</span><span class="badge badge-ai">badge-ai</span><span class="badge badge-outline">badge-outline</span>
+      <button class="chip" type="button">chip</button><button class="chip is-active" type="button">chip is-active</button><span class="chip">옷장 2개<button class="chip-x" type="button" aria-label="옷장 빼기"><svg class="icon" style="width:10px;height:10px"><use href="#i-x" /></svg></button></span>
+      <div class="segmented" role="group" aria-label="시점"><button type="button" aria-pressed="true">조감</button><button type="button" aria-pressed="false">위에서</button><button type="button" aria-pressed="false">눈높이</button></div>
+      <label class="switch"><input type="checkbox" /><span class="switch-track"></span>switch</label>
+    </div>
+    <div class="field-row" style="max-width:720px">
+      <label class="field"><span class="field-label">field-label</span><input class="input" value="input" /></label>
+      <label class="field"><span class="field-label">틀린 값</span><input class="input" value="9999" aria-invalid="true" /><span class="field-error">150~1500 사이로 적어 주세요.</span></label>
+      <label class="field"><span class="field-label">select</span><select class="select"><option>아래쪽</option></select></label>
+    </div>
+  </div>
+</div>
+
+<!-- 시안에서만 쓰는 눈속임: 도구 막대를 고른 가구 아래(자리가 없으면 위)에 놓는다. 실제 앱에서는 React에서 같은 계산을 한다 -->
+<script>
+  function placeToolbar() {
+    const stage = document.querySelector('.canvas-stage.has-rail');
+    const bar = stage.querySelector('.toolbar');
+    const target = stage.querySelector('.plan-item.is-selected');
+    if (!target) return;
+    const s = stage.getBoundingClientRect(), t = target.getBoundingClientRect();
+    const below = t.bottom + 8 + bar.offsetHeight < s.bottom;
+    bar.style.left = Math.max(8, Math.min(s.width - bar.offsetWidth - 8, t.left - s.left + t.width / 2 - bar.offsetWidth / 2)) + 'px';
+    bar.style.top = (below ? t.bottom - s.top + 8 : t.top - s.top - bar.offsetHeight - 8) + 'px';
+  }
+  addEventListener('load', placeToolbar);
+  addEventListener('resize', placeToolbar);
+</script>
+</body>
+</html>

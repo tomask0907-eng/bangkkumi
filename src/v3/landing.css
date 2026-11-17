@@ -1,0 +1,52 @@
+/* 방꾸미 v3 시작 화면. 시안: docs/design-v3/a/tokens.css 의 "시작 화면" 부분.
+   변수와 공통 부품(.btn, .brand, .logo, .ic, .ring, .th, .bar, .num)은 src/v3/theme.css 가 줘요. */
+.landing { height: 100vh; min-height: 600px; background: #fff; display: flex; flex-direction: column; overflow: hidden; --px: max(40px, calc((100vw - 1240px) / 2)); }
+.lnav { display: flex; align-items: center; gap: 28px; height: 64px; flex: none; padding: 0 var(--px); }
+.lnav .links { display: flex; gap: 24px; margin-left: 20px; font-size: var(--fs-14); font-weight: 600; }
+.lnav .links a { color: var(--ink-2); text-decoration: none; }
+.lnav .links a:hover { color: var(--ink); }
+.lnav .sp { flex: 1; }
+.hero { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr); align-items: center; gap: 40px; padding: 0 var(--px); min-height: 0; }
+.hero .eyebrow { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 99px; background: var(--accent-tint); color: var(--accent-on-tint); font-size: var(--fs-13); font-weight: 700; }
+.hero h1 { font-size: var(--fs-56); line-height: 1.16; font-weight: 800; letter-spacing: -0.045em; margin: 16px 0 14px; }
+.hero h1 em { font-style: normal; color: var(--accent-strong); }
+.hero .pitch { font-size: 17px; line-height: 1.65; color: var(--ink-2); }
+.hero .cta { display: flex; gap: 10px; margin-top: 26px; }
+.hero .proof { display: flex; gap: 18px; margin-top: 18px; font-size: var(--fs-13); color: var(--ink-3); font-weight: 500; }
+.hero .proof span { display: inline-flex; align-items: center; gap: 5px; }
+.hero .proof .ic { width: 14px; height: 14px; color: var(--ok); stroke-width: 2.6; }
+/* 히어로 그림: 애저 판 위에 흰 방을 띄워요 */
+.hero-art { position: relative; align-self: stretch; margin: 6px 0 10px; border-radius: 36px; min-height: 0; container-type: size;
+  background: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px) 0 0 / 36px 36px, linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px) 0 0 / 36px 36px,
+    radial-gradient(120% 100% at 25% 10%, color-mix(in srgb, var(--accent), #fff 27%) 0%, var(--accent) 48%, var(--accent-strong) 100%); }
+.hero-art .iso-room { position: absolute; inset: 2% 5% 0; width: 90%; height: 98%; filter: drop-shadow(0 18px 24px rgba(17,39,71,.3)); }
+.fcard { position: absolute; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-radius: 16px; background: #fff; box-shadow: 0 12px 28px rgba(17,39,71,.24); font-size: var(--fs-12); color: var(--ink-3); font-weight: 600; white-space: nowrap; }
+.fcard strong { display: block; font-size: var(--fs-16); color: var(--ink); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; }
+.fcard .ring { width: 44px; height: 44px; } .fcard .ring b { font-size: 16px; }
+.fcard .th { width: 44px; height: 44px; }
+.fcard.score { left: -4%; top: 17%; }
+.fcard.price { right: -3%; top: 8%; }
+/* 예상 합계 카드는 판이 아니라 방 그림에 맞춰 놓아요(그림 좌표 190, 296 = 침대 발치 바로 아래).
+   --u 는 그림 1칸의 화면 길이예요(.iso-room 의 90% × 98%, viewBox 670 × 676 과 같은 값). 판 크기가 바뀌어도 가구를 가리지 않아요. */
+.fcard.total { --u: min(calc(90cqw / 670), calc(98cqh / 676)); left: calc(50% + 147 * var(--u)); top: calc(51% + 220 * var(--u)); display: grid; gap: 6px; min-width: 216px; }
+.fcard.total .top { display: flex; justify-content: space-between; gap: 16px; }
+.fcard.total .left { color: var(--ok-text); }
+.fcard.total .of { font-weight: 500; color: var(--ink-3); font-size: var(--fs-12); }
+.feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 14px var(--px) 28px; flex: none; }
+.feat { display: flex; gap: 14px; align-items: center; padding: 16px 18px; border-radius: 18px; background: #fff; border: 1px solid var(--line); box-shadow: var(--sh-1); }
+.feat .ico { width: 52px; height: 52px; border-radius: 16px; background: var(--accent-tint); display: grid; place-items: center; color: var(--accent-strong); flex: none; }
+.feat .ico .ic { width: 26px; height: 26px; }
+.feat:nth-child(2) .ico { background: var(--warm-tint); color: var(--warm-text); }
+.feat h2 { font-size: var(--fs-16); font-weight: 700; letter-spacing: -0.02em; }
+.feat p { font-size: var(--fs-13); color: var(--ink-2); margin-top: 2px; line-height: 1.5; }
+@media (max-height: 700px) {
+  .lnav { height: 56px; }
+  .hero h1 { font-size: 46px; margin: 12px 0 10px; } .hero .pitch { font-size: 15px; line-height: 1.55; }
+  .hero .cta { margin-top: 18px; } .hero .proof { margin-top: 12px; }
+  .landing .btn.lg { height: 46px; }
+  .feats { padding: 10px var(--px) 16px; } .feat { padding: 10px 14px; } .feat .ico { width: 44px; height: 44px; }
+}
+@media (min-width: 1700px) {
+  .hero h1 { font-size: 72px; } .hero .pitch { font-size: 20px; }
+  .feats { padding-bottom: 48px; } .feat { padding: 22px 24px; }
+}

@@ -1,0 +1,47 @@
+{
+  "meta": {
+    "surveyedAt": "2026-11-17",
+    "source": "이케아 코리아 공식 사이트 (ikea.com/kr/ko)",
+    "unit": { "width": "cm", "depth": "cm", "height": "cm", "price": "KRW" },
+    "priceLabel": "2026년 11월 조사 기준 가격, 실제 가격과 다를 수 있음",
+    "dimSource": {
+      "product": "상품 상세 페이지의 치수 항목에서 확인",
+      "list": "목록 페이지 상품명 표기(폭x깊이x높이)에서 옮김, 상세 페이지 미확인"
+    }
+  },
+  "items": [
+    { "id": "bed-vevelstad-120", "category": "bed", "name": "VEVELSTAD 베벨스타드 침대프레임 120x200", "brand": "IKEA", "width": 126, "depth": 207, "height": 27, "price": 119000, "dimSource": "product", "note": "매트리스 별도, 머리판 없음", "searchQuery": "슈퍼싱글 침대프레임", "url": "https://www.ikea.com/kr/ko/p/vevelstad-bed-frame-white-80518273/" },
+    { "id": "bed-tarva-120", "category": "bed", "name": "TARVA 타르바 침대프레임 120x200", "brand": "IKEA", "width": 128, "depth": 209, "height": 92, "price": 139000, "dimSource": "product", "note": "갈빗살·매트리스 별도, 높이는 머리판 기준", "searchQuery": "원목 슈퍼싱글 침대프레임", "url": "https://www.ikea.com/kr/ko/p/tarva-bed-frame-pine-00354459/" },
+    { "id": "bed-slattum-120", "category": "bed", "name": "SLATTUM 슬라툼 쿠션형 침대프레임 120x200", "brand": "IKEA", "width": 124, "depth": 206, "height": 85, "price": 139000, "dimSource": "product", "note": "매트리스 별도, 높이는 머리판 기준", "searchQuery": "패브릭 슈퍼싱글 침대프레임", "url": "https://www.ikea.com/kr/ko/p/slattum-upholstered-bed-frame-vissle-dark-grey-70571242/" },
+    { "id": "bed-fagelfjallet-90", "category": "bed", "name": "FÅGELFJÄLLET 포겔피엘레트 침대프레임+수납함2 90x200", "brand": "IKEA", "width": 102, "depth": 207, "height": 101, "price": 249000, "dimSource": "product", "note": "갈빗살·매트리스 별도, 서랍을 열 공간(깊이 60) 필요", "searchQuery": "싱글 수납침대 프레임", "url": "https://www.ikea.com/kr/ko/p/fagelfjaellet-bed-frame-with-2-storage-boxes-off-white-s79630893/" },
+
+    { "id": "desk-linnmon-100", "category": "desk", "name": "LINNMON 린몬 / ADILS 아딜스 테이블 100x60", "brand": "IKEA", "width": 100, "depth": 60, "height": 74, "price": 49900, "dimSource": "product", "note": "", "searchQuery": "책상 1000x600", "url": "https://www.ikea.com/kr/ko/p/linnmon-adils-table-white-s09246408/" },
+    { "id": "desk-lagkapten-120", "category": "desk", "name": "LAGKAPTEN 락캅텐 / ADILS 아딜스 책상 120x60", "brand": "IKEA", "width": 120, "depth": 60, "height": 73, "price": 59900, "dimSource": "product", "note": "", "searchQuery": "책상 1200x600", "url": "https://www.ikea.com/kr/ko/p/lagkapten-adils-desk-white-s09416759/" },
+    { "id": "desk-micke-73", "category": "desk", "name": "MICKE 미케 책상 73x50", "brand": "IKEA", "width": 73, "depth": 50, "height": 75, "price": 69900, "dimSource": "product", "note": "서랍 1개", "searchQuery": "미니 책상 서랍", "url": "https://www.ikea.com/kr/ko/p/micke-desk-white-80354281/" },
+    { "id": "desk-micke-105", "category": "desk", "name": "MICKE 미케 책상 105x50", "brand": "IKEA", "width": 105, "depth": 50, "height": 75, "price": 119000, "dimSource": "product", "note": "", "searchQuery": "서랍 책상 1000", "url": "https://www.ikea.com/kr/ko/p/micke-desk-white-80354276/" },
+
+    { "id": "chair-smallen", "category": "chair", "name": "SMÄLLEN 스멜렌 회전의자", "brand": "IKEA", "width": 65, "depth": 65, "height": 85, "price": 35000, "dimSource": "product", "note": "높이는 최대 높이", "searchQuery": "회전의자", "url": "https://www.ikea.com/kr/ko/p/smaellen-swivel-chair-black-10503468/" },
+    { "id": "chair-loberget", "category": "chair", "name": "LOBERGET 로베리에트 / MALSKÄR 말셰르 회전의자", "brand": "IKEA", "width": 67, "depth": 67, "height": 90, "price": 49900, "dimSource": "product", "note": "", "searchQuery": "화이트 회전의자", "url": "https://www.ikea.com/kr/ko/p/loberget-malskaer-swivel-chair-white-s59445467/" },
+    { "id": "chair-markus", "category": "chair", "name": "MARKUS 마르쿠스 사무용의자", "brand": "IKEA", "width": 62, "depth": 60, "height": 140, "price": 199000, "dimSource": "product", "note": "높이는 최대 높이(최소 129)", "searchQuery": "하이백 사무용 의자", "url": "https://www.ikea.com/kr/ko/p/markus-office-chair-vissle-dark-grey-50261151/" },
+
+    { "id": "wardrobe-kronoren-90", "category": "wardrobe", "name": "KRONÖREN 크로뇌렌 오픈형 옷장", "brand": "IKEA", "width": 90, "depth": 49, "height": 181, "price": 80000, "dimSource": "list", "note": "문 없음", "searchQuery": "오픈형 옷장 행거", "url": "https://www.ikea.com/kr/ko/p/kronoeren-open-wardrobe-pine-20610806/" },
+    { "id": "wardrobe-kleppstad-79", "category": "wardrobe", "name": "KLEPPSTAD 클렙스타드 옷장+도어2", "brand": "IKEA", "width": 79, "depth": 55, "height": 176, "price": 139000, "dimSource": "list", "note": "여닫이문, 문 열 공간 필요", "searchQuery": "2문 옷장 800", "url": "https://www.ikea.com/kr/ko/p/kleppstad-wardrobe-with-2-doors-white-10437237/" },
+    { "id": "wardrobe-kleppstad-117", "category": "wardrobe", "name": "KLEPPSTAD 클렙스타드 옷장+도어3", "brand": "IKEA", "width": 117, "depth": 55, "height": 176, "price": 169000, "dimSource": "list", "note": "여닫이문, 문 열 공간 필요", "searchQuery": "3문 옷장 1200", "url": "https://www.ikea.com/kr/ko/p/kleppstad-wardrobe-with-3-doors-white-80441759/" },
+    { "id": "wardrobe-brimnes-78", "category": "wardrobe", "name": "BRIMNES 브림네스 옷장+도어2", "brand": "IKEA", "width": 78, "depth": 50, "height": 190, "price": 199000, "dimSource": "list", "note": "조사일 할인가(기존 229,000), 여닫이문", "searchQuery": "거울 옷장 800", "url": "https://www.ikea.com/kr/ko/p/brimnes-wardrobe-with-2-doors-white-20400479/" },
+
+    { "id": "drawer-gursken-3", "category": "drawer", "name": "GURSKEN 구르스켄 3칸서랍장", "brand": "IKEA", "width": 69, "depth": 38, "height": 67, "price": 59900, "dimSource": "product", "note": "", "searchQuery": "3단 서랍장", "url": "https://www.ikea.com/kr/ko/p/gursken-chest-of-3-drawers-light-beige-60503296/" },
+    { "id": "drawer-lastare-4", "category": "drawer", "name": "LASTARE 라스타레 4칸서랍장", "brand": "IKEA", "width": 60, "depth": 42, "height": 100, "price": 159000, "dimSource": "list", "note": "", "searchQuery": "4단 서랍장 600", "url": "https://www.ikea.com/kr/ko/p/lastare-chest-of-4-drawers-white-40602674/" },
+    { "id": "drawer-vihals-4", "category": "drawer", "name": "VIHALS 비할스 4칸서랍장", "brand": "IKEA", "width": 70, "depth": 47, "height": 90, "price": 179000, "dimSource": "list", "note": "", "searchQuery": "4단 서랍장 700", "url": "https://www.ikea.com/kr/ko/p/vihals-chest-of-4-drawers-white-anchor-unlock-function-80483240/" },
+
+    { "id": "bookcase-baggebo-80", "category": "bookcase", "name": "BAGGEBO 바게보 책장 50x30x80", "brand": "IKEA", "width": 50, "depth": 30, "height": 80, "price": 25000, "dimSource": "list", "note": "", "searchQuery": "낮은 책장 2단", "url": "https://www.ikea.com/kr/ko/p/baggebo-bookcase-white-10483875/" },
+    { "id": "bookcase-baggebo-160", "category": "bookcase", "name": "BAGGEBO 바게보 책장 50x25x160", "brand": "IKEA", "width": 50, "depth": 25, "height": 160, "price": 35000, "dimSource": "list", "note": "", "searchQuery": "슬림 책장 5단", "url": "https://www.ikea.com/kr/ko/p/baggebo-bookcase-white-10483880/" },
+    { "id": "bookcase-billy-106", "category": "bookcase", "name": "BILLY 빌리 책장 80x28x106", "brand": "IKEA", "width": 80, "depth": 28, "height": 106, "price": 64900, "dimSource": "list", "note": "", "searchQuery": "3단 책장 800", "url": "https://www.ikea.com/kr/ko/p/billy-bookcase-white-70522044/" },
+    { "id": "bookcase-billy-202", "category": "bookcase", "name": "BILLY 빌리 책장 80x28x202", "brand": "IKEA", "width": 80, "depth": 28, "height": 202, "price": 89900, "dimSource": "list", "note": "", "searchQuery": "6단 책장 800", "url": "https://www.ikea.com/kr/ko/p/billy-bookcase-white-00522047/" },
+
+    { "id": "sofa-glostad-2", "category": "sofa", "name": "GLOSTAD 글로스타드 2인용소파", "brand": "IKEA", "width": 121, "depth": 78, "height": 68, "price": 150000, "dimSource": "product", "note": "높이는 등받이 기준", "searchQuery": "2인용 소파 원룸", "url": "https://www.ikea.com/kr/ko/p/glostad-2-seat-sofa-knisa-dark-grey-10489009/" },
+    { "id": "sofa-klippan-2", "category": "sofa", "name": "KLIPPAN 클리판 2인용소파", "brand": "IKEA", "width": 177, "depth": 88, "height": 66, "price": 399000, "dimSource": "product", "note": "", "searchQuery": "2인용 가죽 소파", "url": "https://www.ikea.com/kr/ko/p/klippan-2-seat-sofa-bomstad-black-10399315/" },
+
+    { "id": "bedside-knarrevik", "category": "bedside", "name": "KNARREVIK 크나레비크 침대협탁", "brand": "IKEA", "width": 37, "depth": 28, "height": 45, "price": 15000, "dimSource": "list", "note": "", "searchQuery": "침대 협탁", "url": "https://www.ikea.com/kr/ko/p/knarrevik-bedside-table-black-80576319/" },
+    { "id": "bedside-grafjallet", "category": "bedside", "name": "GRÅFJÄLLET 그로피엘레트 침대협탁", "brand": "IKEA", "width": 45, "depth": 36, "height": 59, "price": 59900, "dimSource": "list", "note": "", "searchQuery": "서랍 협탁", "url": "https://www.ikea.com/kr/ko/p/grafjaellet-bedside-table-white-80583107/" }
+  ]
+}

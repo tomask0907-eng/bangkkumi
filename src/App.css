@@ -1,0 +1,135 @@
+/* 방꾸미 v2 — theme.css에 없는, 이 화면에서만 쓰는 배치. 색·간격은 theme.css 변수만 쓴다. */
+
+/* ───────── 위쪽 막대 ───────── */
+.topbar-actions > .tooltip { display: inline-flex; }
+/* 오른쪽 끝에 있는 말풍선은 오른쪽에 맞춘다 (패널 밖으로 잘리거나 화면이 옆으로 밀리지 않게) */
+.tip-end::after { left: auto; right: 0; translate: 0 4px; }
+.tip-end:hover::after, .tip-end:focus-visible::after, .tip-end:focus-within::after { translate: 0 0; }
+/* 내보내기 버튼 + 방법 고르기(▾) */
+.split { position: relative; display: inline-flex; }
+.split > .btn:first-child { border-top-right-radius: 0; border-bottom-right-radius: 0; }
+.split > .btn-icon { width: 28px; border-top-left-radius: 0; border-bottom-left-radius: 0; border-left-color: rgb(255 255 255 / 0.22); margin-left: -1px; }
+.menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: var(--z-tooltip);
+  display: flex; flex-direction: column; gap: 2px; min-width: 250px; padding: var(--sp-1);
+  background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-md); box-shadow: var(--shadow-lg);
+  animation: rise var(--t-base) var(--ease);
+}
+.menu > button { display: flex; align-items: flex-start; gap: var(--sp-2); padding: var(--sp-2) 10px; text-align: left; background: none; border: 0; border-radius: var(--r-sm); cursor: pointer; }
+.menu > button:hover, .menu > button:focus-visible { background: var(--surface-3); }
+.menu > button .icon { margin-top: 3px; color: var(--text-3); }
+.menu b { display: block; font-weight: 700; }
+.menu small { font-size: var(--fs-xs); color: var(--text-3); }
+
+/* ───────── 왼쪽 입력 ───────── */
+.reset-btn { margin-left: auto; color: var(--text-3); }
+.opening { grid-template-columns: 60px minmax(0, 1.25fr) minmax(0, 1fr) minmax(0, 1fr) var(--ctl-h-sm); }
+.opening > .tooltip { display: inline-flex; }
+.underlay-note { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); }
+.underlay-note .btn { margin-left: auto; }
+.no-window { margin-top: var(--sp-2); font-weight: 600; color: var(--warn-text); }
+
+.style-card > .badge { position: absolute; top: 10px; left: 10px; box-shadow: 0 0 0 1.5px var(--surface); }
+
+.quick-row { display: flex; align-items: center; gap: var(--sp-2); margin-top: var(--sp-2); }
+.kbd-hint { display: inline-flex; gap: 3px; margin-left: auto; }
+.quick-chips { display: flex; flex-wrap: wrap; gap: 5px; margin-top: var(--sp-2); }
+.quick-chips .chip { height: 24px; padding: 0 8px 0 6px; gap: 3px; }
+.spec-empty { padding: var(--sp-4); background: var(--surface-2); border-radius: var(--r-md); }
+/* 고치는 칸: 이름 한 줄, 폭·깊이·높이 한 줄, 가격 한 줄 (좁은 패널에서 숫자가 단위 글자에 가리지 않게) */
+.spec-edit { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.spec-rename, .spec-edit .price-edit { grid-column: 1 / -1; }
+.spec-edit .input { padding-right: 30px; }
+.spec-edit .price-edit .input { padding-right: 24px; }
+.spec-edit .price-edit::before { content: '가격'; margin-right: 6px; font-size: var(--fs-xs); font-weight: 600; color: var(--text-3); white-space: nowrap; }
+.foot-hint { margin-bottom: var(--sp-2); font-size: var(--fs-sm); font-weight: 600; color: var(--warn-text); text-align: center; }
+
+/* ───────── 가격 칸 ───────── */
+.price-edit { display: inline-flex; align-items: center; gap: 2px; min-width: 0; }
+.price-edit .input { text-align: right; font-weight: 600; font-variant-numeric: tabular-nums; }
+.price-edit.is-user .input { border-color: var(--accent-300); background: var(--accent-50); }
+
+/* ───────── 가운데 ───────── */
+.plan-underlay { stroke: var(--plan-ink); stroke-opacity: 0.3; stroke-width: 1; }
+.big-spinner { width: 28px; height: 28px; border-width: 3px; color: var(--accent-600); }
+.stage-fill.empty { background: var(--surface-2); }
+/* 빈 방 안내: 방 한가운데에 둔다 (아래쪽에 두면 벽·현관·축척 막대를 가린다. 가구가 없을 때만 뜨므로 가운데는 비어 있다) */
+.stage-hint {
+  position: absolute; left: 50%; top: 50%; translate: -50% -50%; z-index: var(--z-float);
+  display: flex; flex-direction: column; align-items: center; gap: var(--sp-3); width: max-content; max-width: min(23em, calc(100% - 2 * var(--sp-6))); padding: var(--sp-4);
+  font-size: var(--fs-md); text-align: center; word-break: keep-all; text-wrap: balance; color: var(--text-2); background: rgb(255 255 255 / 0.94); border: 1px solid var(--line); border-radius: var(--r-lg); box-shadow: var(--shadow-md);
+}
+.stage-hint > span:first-child { display: flex; flex-direction: column; gap: 2px; }
+.stage-hint b { font-size: var(--fs-lg); color: var(--text); }
+.stage-hint .row { flex-wrap: wrap; justify-content: center; }
+.variant-rail { max-height: calc(100% - 2 * var(--sp-3)); overflow-y: auto; }
+.variant-thumb > span { white-space: nowrap; }
+@media (min-width: 1600px) {
+  .variant-thumb { width: 68px; }
+  .canvas-stage.has-rail { padding-right: 104px; }
+  .gauge { width: 120px; height: 120px; }
+}
+.toolbar-name small { opacity: 0.65; }
+
+/* ───────── 오른쪽 결과 ───────── */
+.gauge-num b.is-full { font-size: calc(var(--fs-display) * 0.82); } /* 세 자리(100)도 고리 안에 들어가게 */
+.parts { gap: var(--sp-2); }
+.meter.is-off::before { background: var(--line-strong); } /* 따지지 않은 항목(창문 없는 방의 채광) */
+.ok-chips { display: flex; flex-wrap: wrap; gap: var(--sp-1); margin-top: var(--sp-2); }
+
+.cost-tip { margin: 0 0 var(--sp-2); }
+.price-busy { margin-bottom: var(--sp-2); font-size: var(--fs-sm); }
+.price-msg { margin: 0 0 var(--sp-2); }
+/* 한 줄: 이름 · 가격 칸 / 아랫줄: 가격 출처 배지 + 쇼핑몰 링크 (+ 웹 시세 범위) */
+.cost-row.cost-item { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 3px var(--sp-2); padding: 7px 0; }
+.cost-item .cost-name { font-weight: 600; }
+.cost-item .price-edit .input-group { width: 118px; flex: none; }
+.cost-meta { grid-column: 1 / -1; display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-1); font-size: var(--fs-xs); color: var(--text-3); }
+.cost-meta .tooltip::after { left: 0; translate: 0 4px; }
+.cost-meta .tooltip:hover::after { translate: 0 0; }
+.cost-web { font-variant-numeric: tabular-nums; gap: 2px 6px; }
+.cost-web > * { white-space: nowrap; } /* "11월 17일 조사" 같은 조각이 중간에서 끊기지 않게 */
+.cost-web > .cost-off { flex-basis: 100%; white-space: normal; color: var(--warn-text); }
+/* 합계는 비용 줄 묶음(.cost-body) 안에서 패널 아래에 붙어 다닌다: 어느 줄의 가격을 고쳐도 합계와 남은 예산이 같이 보인다 */
+.cost-sum { position: sticky; bottom: 0; z-index: var(--z-sticky); box-shadow: 0 -2px 10px rgb(60 45 20 / 0.08); }
+.panel-plain > .panel-body { scroll-padding-bottom: 136px; } /* Tab으로 옮겨 간 가격 칸이 붙어 있는 합계 뒤에 숨지 않게 */
+/* 붙어 있을 때 아래로 지나가는 줄이 위에서는 옅어지고, 합계 밑 틈(패널 아래 여백)으로는 비치지 않게 가린다 */
+.cost-sum::before, .cost-sum::after { content: ''; position: absolute; left: 0; right: 0; }
+.cost-sum::before { bottom: 100%; height: var(--sp-3); background: linear-gradient(to top, var(--surface), transparent); pointer-events: none; }
+.cost-sum::after { top: 100%; height: var(--sp-2); background: var(--surface); }
+.cost-group .sub-label .switch { font-size: var(--fs-xs); }
+.cost-group.is-off .cost-item { opacity: 0.55; }
+.card-head .btn-sm { font-weight: 600; }
+
+.advice-alert { align-items: center; margin-bottom: var(--sp-3); font-size: var(--fs-sm); }
+.advice-alert .icon { margin-top: 0; }
+.advice-tip + .advice-tip { margin-top: var(--sp-2); }
+
+/* 화면 전체 오류 안내 (main.jsx) */
+.crash { min-height: 100dvh; max-width: 520px; margin: 0 auto; }
+
+/* ───────── 알림 ─────────
+   위쪽 막대의 소개 글 자리에 띄운다: 화면 아래에 띄우면 평면도 아래 조작 안내 줄을 몇 초씩 가린다 */
+.topbar > .toast {
+  position: static; transform: none; flex: 0 1 auto; min-width: 0; margin: 0 auto;
+  padding: 7px var(--sp-4); line-height: 1.35; border-radius: var(--r-lg);
+}
+.topbar > .toast + .topbar-actions { margin-left: 0; }
+.toast.is-error { background: var(--error-text); }
+
+/* 세로로 쌓이는 좁은 화면: 결과 카드가 페이지 흐름을 따르게 한다 */
+@media (max-width: 999px) {
+  .app { overflow-x: clip; }
+  .variant-rail { display: none; }
+  .canvas-stage.has-rail { padding-right: 0; }
+  /* 위쪽 막대가 여러 줄이 되는 화면에서는 알림을 막대 바로 아래에 띄운다 */
+  .topbar > .toast { position: absolute; left: var(--sp-4); right: var(--sp-4); top: calc(100% + var(--sp-2)); bottom: auto; justify-content: center; }
+  .step { scroll-margin-top: 72px; } /* ④ 가구로 올려 줄 때 붙어 있는 위쪽 막대에 가려지지 않게 */
+}
+
+/* 실제 상품 가구 줄: 상품 전체 이름은 한 줄로 줄여 보여 준다(전체는 title) */
+.spec-product { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* 일반 가구 줄: 치수와 [실제 상품 찾기]를 한 줄에 둔다(들어가지 않으면 버튼이 아랫줄로 내려간다) */
+.spec-line { display: flex; flex-wrap: wrap; align-items: center; column-gap: 4px; }
+.spec-line .spec-dims { white-space: nowrap; }
+.spec-line .btn-link { height: 16px; padding: 0 4px; }

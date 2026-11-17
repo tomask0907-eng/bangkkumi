@@ -1,0 +1,7 @@
+node_modules/
+dist/
+exports/
+__pycache__/
+.env*
+# 다나와에서 조사한 상품 자료는 허락받지 않은 자료라서 저장소에 올리지 않는다(있으면 앱이 자동으로 읽는다)
+public/data/catalog.json

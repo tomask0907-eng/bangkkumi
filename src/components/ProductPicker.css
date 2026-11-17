@@ -1,0 +1,46 @@
+/* 상품 고르기 모달(ProductPicker.jsx). 색·간격·글꼴은 theme.css 변수만 쓴다. 틀은 theme.css 의 .modal 을 쓴다 */
+.modal.pp-modal { width: min(1180px, 100%); height: min(94dvh, 900px); max-height: none; }
+.pp-head { align-items: flex-start; }
+.pp-desc { margin-top: 2px; font-size: var(--fs-sm); color: var(--text-3); }
+
+/* 검색·분류·정렬 */
+.pp-controls { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3) var(--sp-5); background: var(--surface-2); border-bottom: 1px solid var(--line); }
+.pp-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); }
+.pp-search { position: relative; flex: 1 1 260px; min-width: 0; }
+.pp-search .icon { position: absolute; left: 10px; top: 50%; translate: 0 -50%; color: var(--text-3); pointer-events: none; }
+.pp-search .input { padding-left: 32px; background-color: var(--surface); }
+.select.pp-select { width: auto; flex: none; max-width: 100%; background-color: var(--surface); }
+.pp-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
+/* 개수 자리는 미리 잡아 둔다(불러온 뒤 분류 칩 줄이 밀리지 않게) */
+.pp-count { min-width: 72px; text-align: right; margin-left: auto; align-self: flex-end; font-size: var(--fs-md); color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pp-count b { font-weight: 800; color: var(--text); }
+
+/* 결과 */
+.modal-body.pp-body { padding: var(--sp-4) var(--sp-5); scrollbar-gutter: stable; }
+.pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--sp-3); }
+.card.pp-card { display: flex; flex-direction: column; min-width: 0; padding: 0; border-radius: var(--r-md); overflow: hidden; }
+/* 사진 높이는 숫자로 고정한다(격자 칸 안에서 height: 100% 는 사진 원래 크기로 늘어난다) */
+.pp-thumb { height: 148px; flex: none; display: grid; place-items: center; overflow: hidden; background: var(--surface); border-bottom: 1px solid var(--line); }
+.pp-thumb img { display: block; width: 100%; height: 148px; padding: 6px; object-fit: contain; }
+.pp-thumb.is-empty { align-content: center; gap: var(--sp-1); font-size: var(--fs-xs); font-weight: 600; color: var(--text-3); background: var(--surface-3); }
+.pp-thumb.is-empty .icon { width: 28px; height: 28px; stroke-width: 1.2; }
+.pp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-1); padding: var(--sp-3); }
+.pp-top { display: flex; align-items: center; gap: 6px; min-height: 20px; }
+.pp-brand { flex: 1; min-width: 0; font-size: var(--fs-xs); font-weight: 600; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-name, .pp-note { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
+.pp-name { min-height: 2.8em; font-size: var(--fs-md); font-weight: 600; line-height: 1.4; }
+.pp-dims { font-size: var(--fs-sm); color: var(--text-2); font-variant-numeric: tabular-nums; }
+.pp-near { font-size: var(--fs-xs); font-weight: 600; color: var(--accent-700); }
+.pp-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; }
+.pp-price b { font-size: var(--fs-lg); font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
+.pp-price span, .pp-note { font-size: var(--fs-xs); color: var(--text-3); }
+.pp-actions { display: flex; gap: 6px; margin-top: auto; padding-top: var(--sp-2); }
+.pp-actions > button { flex: 1; min-width: 0; }
+.pp-more { display: grid; justify-items: center; gap: 6px; padding: var(--sp-4) 0 var(--sp-1); font-size: var(--fs-sm); }
+
+/* 불러오는 중, 오류, 결과 없음 */
+.pp-skel-thumb { height: 148px; border-radius: 0; }
+.pp-state { min-height: 100%; }
+.pp-state .pp-row { justify-content: center; margin-top: var(--sp-2); }
+
+.modal-foot.pp-foot { justify-content: flex-start; font-size: var(--fs-xs); line-height: 1.5; color: var(--text-3); }
