@@ -2,8 +2,19 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { Readable } from 'node:stream';
-import { CATALOG, STYLE_PRESETS, EXAMPLE, parseFurnitureText, validateStyle } from '../src/catalog.js';
+import { CATALOG, STYLE_PRESETS, parseFurnitureText, validateStyle } from '../src/catalog.js';
 import { buildAdvicePrompt, parseAdvice, fallbackAdvice } from '../src/advice.js';
+
+// 시험용 방은 여기에 고정한다. 화면의 예시(src/catalog.js 의 EXAMPLE)가 바뀌어도 아래 시험의 기대값(치수·벽 이름)은 그대로다.
+const EXAMPLE = {
+  room: {
+    width: 300, depth: 400, height: 240,
+    doors: [{ wall: 'bottom', offset: 20, size: 90, kind: 'entry' }],
+    windows: [{ wall: 'top', offset: 50, size: 100, sill: 90, height: 120 }],
+  },
+  budget: 1000000,
+  furnitureText: '슈퍼싱글 침대, 책상 1200, 옷장, 책장',
+};
 import * as furniture from './furniture.js';
 import * as style from './style.js';
 import * as advice from './advice.js';

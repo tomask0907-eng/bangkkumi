@@ -15,6 +15,7 @@ export const ROUTES = {
   '/api/skp': 'skp.js', // POST 배치 → SketchUp 파일
   '/api/shop': 'shop.js', // GET 쇼핑 정보
   '/api/price': 'price.js', // POST 웹 검색으로 가격 시세 조사 (AI)
+  '/api/ref': 'ref.js', // POST 사진이나 상품 링크 → 가구 한 개 (AI)
 };
 
 // 파일이 바뀌면 다시 읽는다 (개발 중 서버 재시작 없이 반영)

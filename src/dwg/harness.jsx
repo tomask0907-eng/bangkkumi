@@ -33,5 +33,5 @@ function Harness() {
 }
 
 // 주소 끝에 ?theme 을 붙이면 앱 테마를 입힌 모습으로 본다
-if (new URLSearchParams(window.location.search).has('theme')) await import('../theme.css');
+if (new URLSearchParams(window.location.search).has('theme')) await import('../v3/theme.css');
 createRoot(document.getElementById('root')).render(<Harness />);

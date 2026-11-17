@@ -26,9 +26,11 @@ function blobTexture() {
   return tex;
 }
 
-export function createViewer(host, onPick) {
+// still = { width, height, scale } 을 주면 "그림 한 장" 모드다(render.js): 화면 크기를 따라가지 않고 정해진 크기 × scale 로 그리며,
+// snapshot() 으로 캔버스를 바로 꺼낼 수 있다. 그림자는 더 곱고 부드럽게 만든다.
+export function createViewer(host, onPick, still = null) {
   // 배경은 그리지 않는다(투명) → 뒤에 있는 캔버스 바탕(--bg)이 그대로 보인다
-  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true, preserveDrawingBuffer: !!still });
   renderer.outputColorSpace = THREE.SRGBColorSpace; // 톤 매핑은 쓰지 않는다 → 평면도와 같은 색이 그대로 나온다
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFShadowMap; // three 0.187에는 PCFSoftShadowMap이 없다(쓰면 경고). PCF + radius가 부드러운 그림자다
@@ -53,10 +55,11 @@ export function createViewer(host, onPick) {
   const hemi = new THREE.HemisphereLight('#ffffff', '#e8edf3', 0.86 * Math.PI);
   const sun = new THREE.DirectionalLight('#ffffff', 0.2 * Math.PI);
   sun.castShadow = true;
-  sun.shadow.mapSize.set(2048, 2048);
+  const shadowSize = still ? Math.min(4096, renderer.capabilities.maxTextureSize) : 2048;
+  sun.shadow.mapSize.set(shadowSize, shadowSize);
   sun.shadow.bias = -0.0008;
   sun.shadow.normalBias = 2;
-  sun.shadow.radius = 6;
+  sun.shadow.radius = still ? 10 : 6;
   const roomGroup = new THREE.Group(), itemsGroup = new THREE.Group(), markGroup = new THREE.Group();
   scene.add(hemi, sun, sun.target, roomGroup, itemsGroup, markGroup);
 
@@ -191,14 +194,13 @@ export function createViewer(host, onPick) {
     }
   }
 
-  // 고른 가구: 바닥에 테두리 + 상자 모양 선(색은 화면의 --accent)
+  // 고른 가구: 바닥에 테두리만 그린다(색은 화면의 --accent). 상자 모양 선은 침대처럼 낮은 가구에서 머리판 높이까지 허공에 떠 보여서 뺐다
   function mark() {
     for (const o of markGroup.children) { if (o.geometry !== unit.box) o.geometry?.dispose(); o.material?.dispose(); }
     markGroup.clear();
     const g = itemsGroup.children.find((o) => o.userData.uid === selected);
     if (!g || selected == null) return;
     const color = new THREE.Color(css('--accent') || '#2F81CC'), box = new THREE.Box3().setFromObject(g);
-    markGroup.add(new THREE.Box3Helper(box, color));
     const s = box.getSize(new THREE.Vector3()), c = box.getCenter(new THREE.Vector3()), k = 2;
     const mat = new THREE.MeshBasicMaterial({ color });
     for (const [w, d, x, z] of [[s.x + k * 4, k, 0, -s.z / 2 - k * 1.5], [s.x + k * 4, k, 0, s.z / 2 + k * 1.5], [k, s.z + k * 2, -s.x / 2 - k * 1.5, 0], [k, s.z + k * 2, s.x / 2 + k * 1.5, 0]]) {
@@ -279,7 +281,7 @@ export function createViewer(host, onPick) {
   const onTouch = () => { touched = true; };
   controls.addEventListener('start', onTouch);
 
-  const ro = new ResizeObserver(([entry]) => {
+  const ro = still ? null : new ResizeObserver(([entry]) => {
     const w = host.clientWidth, h = host.clientHeight;
     if (!w || !h) return;
     // 실제 화면 점 개수에 맞춘다(.app 의 zoom 1.15 에서도 흐려지지 않게). 2배까지만: 노트북이 뜨거워지지 않게
@@ -291,7 +293,17 @@ export function createViewer(host, onPick) {
     if (!sized || !touched) { sized = true; applyView(view); } // 사용자가 돌려 둔 시점이 아니면 새 크기에 다시 맞춘다
     render(); // 크기를 바꾸면 화면이 지워지므로 바로 다시 그린다(깜빡임 방지)
   });
-  ro.observe(host);
+  ro?.observe(host);
+  if (still) {
+    // 그래픽 카드가 받을 수 있는 크기 안에서 scale 배로 크게 그린다(줄이면 선이 고와진다)
+    const cap = Math.min(renderer.capabilities.maxTextureSize, 8192);
+    const k = Math.max(1, Math.min(still.scale || 1, cap / Math.max(still.width, still.height)));
+    renderer.setPixelRatio(1);
+    renderer.setSize(Math.round(still.width * k), Math.round(still.height * k), false);
+    camera.aspect = still.width / still.height;
+    camera.updateProjectionMatrix();
+    sized = true;
+  }
 
   // 끌지 않고 누른 것만 "고르기"로 본다
   let down = null;
@@ -324,9 +336,16 @@ export function createViewer(host, onPick) {
     },
     setSelected(uid) { selected = uid ?? null; mark(); invalidate(); },
     setView: applyView,
+    // 지금 장면을 바로 그리고 캔버스를 돌려준다(그림 한 장 모드에서 쓴다). WebGL 이 끊겼으면 null
+    snapshot() {
+      if (!room || renderer.getContext().isContextLost()) return null;
+      renderer.shadowMap.needsUpdate = true;
+      render();
+      return canvas;
+    },
     dispose() {
       cancelAnimationFrame(raf);
-      ro.disconnect();
+      ro?.disconnect();
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointerup', onUp);
       controls.dispose();

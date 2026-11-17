@@ -7,7 +7,7 @@ import { createViewer } from './three/viewer.js';
 
 const VIEWS = [['bird', '조감'], ['top', '위에서'], ['eye', '눈높이']];
 
-export default function Plan3D({ room, items, style, selected = null, onSelect, viewsHost }) {
+export default function Plan3D({ room, items, style, selected = null, onSelect, viewsHost, onView }) {
   const boxRef = useRef(null);
   const hostRef = useRef(null);
   const viewerRef = useRef(null);
@@ -41,7 +41,7 @@ export default function Plan3D({ room, items, style, selected = null, onSelect, 
   const views = (
     <div className="seg float plan3d-views" role="group" aria-label="보는 방향" style={slot ? undefined : { position: 'absolute', top: 0, left: 0, zIndex: 1 }}>
       {VIEWS.map(([key, label]) => (
-        <button key={key} type="button" aria-pressed={view === key} onClick={() => { setView(key); viewerRef.current?.setView(key); }}>
+        <button key={key} type="button" aria-pressed={view === key} onClick={() => { setView(key); viewerRef.current?.setView(key); onView?.(key); }}>
           {label}
         </button>
       ))}

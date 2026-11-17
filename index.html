@@ -5,9 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="가구를 사기 전에, 내 방에 맞는지 AI와 먼저 놓아 보는 원룸 인테리어 플래너" />
     <title>방꾸미 — AI 원룸 인테리어 플래너</title>
-    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><rect width='20' height='20' rx='5' fill='%231f6650'/><path d='M5 10V5h10v10h-5M5 15l3-2.5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/><rect x='10.6' y='7' width='2.6' height='2.6' rx='.6' fill='white'/></svg>" />
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'><rect width='20' height='20' rx='5' fill='%23296BB0'/><path d='M5 10V5h10v10h-5M5 15l3-2.5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/><rect x='10.6' y='7' width='2.6' height='2.6' rx='.6' fill='white'/></svg>" />
   </head>
   <body>
+    <!-- 아이콘 묶음: <svg class="ic"><use href="#i-이름"/></svg> 로 쓴다 (src/v3/Ic.jsx) -->
+    <svg width="0" height="0" style="position:absolute" aria-hidden="true">
+      <!-- 아이콘 (24px, 선 1.8) -->
+      <symbol id="i-logo" viewBox="0 0 24 24"><path d="M4.5 4.5h15v15h-15z" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/><path d="M4.5 11h6.5v4M14.5 19.5v-6h5" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></symbol>
+      <symbol id="i-room" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="17" height="17" rx="2"/><path d="M3.5 10.5h7v4M14 20.5v-6h6.5"/></symbol>
+      <symbol id="i-style" viewBox="0 0 24 24"><path d="M12 3.5a8.5 8.5 0 1 0 0 17c1.4 0 2-1 2-2 0-1.6-1-1.8-1-3 0-1 .8-1.5 2-1.5h2a3.5 3.5 0 0 0 3.5-3.5c0-3.9-3.8-7-8.5-7z"/><circle cx="8" cy="11" r=".9"/><circle cx="11.5" cy="7.5" r=".9"/><circle cx="15.5" cy="9" r=".9"/></symbol>
+      <symbol id="i-sofa" viewBox="0 0 24 24"><path d="M5 11V8a2.5 2.5 0 0 1 2.5-2.5h9A2.5 2.5 0 0 1 19 8v3"/><path d="M3 13a2 2 0 0 1 4 0v2h10v-2a2 2 0 0 1 4 0v4.5H3z"/><path d="M6 17.5v2M18 17.5v2"/></symbol>
+      <symbol id="i-layout" viewBox="0 0 24 24"><rect x="3.5" y="3.5" width="7" height="9" rx="1.5"/><rect x="13.5" y="3.5" width="7" height="5" rx="1.5"/><rect x="13.5" y="11.5" width="7" height="9" rx="1.5"/><rect x="3.5" y="15.5" width="7" height="5" rx="1.5"/></symbol>
+      <symbol id="i-cost" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M7.5 9l2 6.5L12 9l2.5 6.5 2-6.5M7 12h10"/></symbol>
+      <symbol id="i-report" viewBox="0 0 24 24"><path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5M9 12.5h6M9 16h6"/></symbol>
+      <symbol id="i-spark" viewBox="0 0 24 24"><path d="M11 3.5l1.9 5.1 5.1 1.9-5.1 1.9-1.9 5.1-1.9-5.1L4 10.5l5.1-1.9z"/><path d="M18.5 15l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></symbol>
+      <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></symbol>
+      <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></symbol>
+      <symbol id="i-upload" viewBox="0 0 24 24"><path d="M12 16V4.5M7.5 9L12 4.5 16.5 9M4.5 15.5v4h15v-4"/></symbol>
+      <symbol id="i-download" viewBox="0 0 24 24"><path d="M12 4.5V16M7.5 11.5L12 16l4.5-4.5M4.5 19.5h15"/></symbol>
+      <symbol id="i-rotate" viewBox="0 0 24 24"><path d="M19.5 12a7.5 7.5 0 1 1-2.6-5.7"/><path d="M19.5 4v4.5H15"/></symbol>
+      <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4.5 7h15M9.5 7V4.5h5V7M6.5 7l1 12.5h9l1-12.5"/></symbol>
+      <symbol id="i-move" viewBox="0 0 24 24"><path d="M12 3.5v17M3.5 12h17M9 6.5l3-3 3 3M9 17.5l3 3 3-3M6.5 9l-3 3 3 3M17.5 9l3 3-3 3"/></symbol>
+      <symbol id="i-right" viewBox="0 0 24 24"><path d="M9.5 6l6 6-6 6"/></symbol>
+      <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5"/></symbol>
+      <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4.5l9 15H3z"/><path d="M12 10.5v4M12 17v.5"/></symbol>
+      <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 5.5H5.5v13h13V14M13.5 4.5h6v6M19.5 4.5l-8 8"/></symbol>
+      <symbol id="i-cube" viewBox="0 0 24 24"><path d="M12 3.5l7.5 4.2v8.600L12 20.5l-7.5-4.200V7.700z"/><path d="M4.5 7.700L12 12l7.5-4.300M12 12v8.5"/></symbol>
+      <symbol id="i-door" viewBox="0 0 24 24"><path d="M6.5 20.5v-17h11v17M3.5 20.5h17M14 12.5v.5"/></symbol>
+      <symbol id="i-window" viewBox="0 0 24 24"><rect x="4.5" y="4.5" width="15" height="15" rx="1.5"/><path d="M12 4.5v15M4.5 12h15"/></symbol>
+      <symbol id="i-info" viewBox="0 0 24 24"><circle cx="12" cy="12" r="8.5"/><path d="M12 11v5.5M12 7.5v.5"/></symbol>
+      <symbol id="i-open" viewBox="0 0 24 24"><path d="M4.5 8.5v10h15v-10M4.5 8.5l3-4h9l3 4M4.5 8.5h15M10 12.5h4"/></symbol>
+      <symbol id="i-undo" viewBox="0 0 24 24"><path d="M8.5 5L4.5 9l4 4"/><path d="M4.5 9h9a5.5 5.5 0 0 1 0 11H9"/></symbol>
+      <symbol id="i-file" viewBox="0 0 24 24"><path d="M6 3.5h8l4.5 4.5v12.5H6z"/><path d="M14 3.5V8h4.5"/></symbol>
+      <!-- 가구 썸네일: 정면 그림. 선은 --plan-line, 면은 고른 스타일 색 -->
+      <symbol id="t-bed" viewBox="0 0 40 40"><rect x="4" y="10" width="4.5" height="21" rx="1.2" style="fill:var(--pw)"/><rect x="8.5" y="24" width="27.5" height="5" rx="1" style="fill:var(--pw)"/><rect x="8.5" y="19" width="27.5" height="5.5" rx="2" fill="#fff"/><rect x="9.5" y="15.200" width="9" height="5" rx="2.200" fill="#fff"/><path d="M19.5 19H34a2 2 0 0 1 2 2v3.5H17.5V21a2 2 0 0 1 2-2z" style="fill:var(--pb)"/><path d="M10.5 29v3M34 29v3"/></symbol>
+      <symbol id="t-desk" viewBox="0 0 40 40"><rect x="10" y="6.500" width="13" height="8" rx="1.2" style="fill:var(--pb)"/><path d="M16.5 14.500V17"/><rect x="3" y="17" width="34" height="3.5" rx="1" style="fill:var(--pw)"/><path d="M6 20.5V34M34 20.5V34"/><rect x="23" y="20.5" width="11" height="8" rx="1" fill="#fff"/><path d="M27 24.5h3"/></symbol>
+      <symbol id="t-wardrobe" viewBox="0 0 40 40"><rect x="8" y="4" width="24" height="30" rx="1.5" style="fill:var(--pw2)"/><path d="M20 4v30M17.5 17v5M22.5 17v5M11 34v2.500M29 34v2.500"/></symbol>
+      <symbol id="t-shelf" viewBox="0 0 40 40"><rect x="9" y="4" width="22" height="32" rx="1.5" style="fill:var(--pw)"/><path d="M9 12h22M9 20h22M9 28h22"/><path d="M12.5 7v5M15 6.500V12M17.5 7.500V12M23.5 15v5M26 14.500V20M13 23.500V28M15.500 23v5M24 31.500V36M26.500 31V36" style="stroke:var(--c5)" stroke-width="1.6"/></symbol>
+      <symbol id="t-rug" viewBox="0 0 40 40"><rect x="5" y="10" width="30" height="20" rx="2" style="fill:var(--pr)"/><rect x="8.5" y="13.5" width="23" height="13" rx="1" stroke="#fff"/><path d="M3 12v16M37 12v16" stroke-dasharray="1 2"/></symbol>
+      <symbol id="t-mirror" viewBox="0 0 40 40"><rect x="13" y="4" width="14" height="29" rx="7" fill="#EDF4FC"/><path d="M17 13l4-4M17 19l6-6M15.500 32.500l-2 3.500M24.500 32.500l2 3.500"/></symbol>
+      <symbol id="t-lamp" viewBox="0 0 40 40"><path d="M14 8h12l4 12H10z" fill="#FFF1CC"/><path d="M20 20v12M14 32.500h12"/></symbol>
+      <symbol id="t-curtain" viewBox="0 0 40 40"><path d="M5 7h30"/><path d="M8 7v26c2-1 3 1 5 0s3 1 4 0V7zM23 7v26c2-1 3 1 5 0s3 1 4 0V7z" fill="#F6F0E6"/></symbol>
+      <symbol id="t-plant" viewBox="0 0 40 40"><path d="M20 25c-1-8-5-13-9-15 0 6 3 12 9 15zM20 25c1-8 5-13 9-15 0 6-3 12-9 15zM20 25c-2-7-1-15 0-20 1 5 2 13 0 20z" fill="#D3E8DB" stroke="#4E8F74"/><path d="M14 25h12l-1.5 9.500h-9z" fill="#fff"/></symbol>
+      <!-- 스타일 카드: 색·마감재 견본을 배치한 무드보드 타일 (--c1 벽, --c2 나무, --c3 패브릭, --c4 포인트, --c5 짙은 색) -->
+      <symbol id="mood" viewBox="0 0 160 62" preserveAspectRatio="xMidYMid slice">
+        <rect width="160" height="62" style="fill:var(--c1)"/>
+        <path d="M20 62V38a20 20 0 0 1 40 0v24z" style="fill:var(--c4)"/><circle cx="66" cy="18" r="9" style="fill:var(--c3)"/>
+        <rect x="92" width="68" height="36" style="fill:var(--c2)"/><path d="M92 12h68M92 24h68M118 0v12M140 12v12M110 24v12" stroke="rgba(0,0,0,.08)" fill="none"/>
+        <rect x="92" y="36" width="40" height="26" style="fill:var(--c3)"/><rect x="132" y="36" width="28" height="26" style="fill:var(--c5)"/>
+      </symbol>
+      <!-- 배치안 썸네일 가구: 침대·책상·옷장·책장·러그 -->
+      <symbol id="v-room" viewBox="-1 -1 42 32"><rect width="40" height="30" rx="1" fill="#fff" stroke="#3D4756" stroke-width="1.6"/></symbol>
+    </svg>
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

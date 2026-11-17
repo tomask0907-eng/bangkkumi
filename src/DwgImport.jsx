@@ -260,6 +260,8 @@ export default function DwgImport({ onApply, onClose }) {
   };
   const font = 12 * k;
   const uploading = busy !== null;
+  // 방 후보 목록의 작은 그림 기준(가장 넓고 가장 긴 후보)
+  const candMax = useMemo(() => (plan?.rooms || []).reduce((m, r) => ({ w: Math.max(m.w, r.w), h: Math.max(m.h, r.h) }), { w: 1, h: 1 }), [plan]);
 
   return (
     <div
@@ -290,6 +292,7 @@ export default function DwgImport({ onApply, onClose }) {
               </div>
             ) : (
               <>
+                <span className="dwg-drop-ico" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M12 15.5V4.5M7.5 9L12 4.5 16.5 9M4.5 15v3a1.5 1.5 0 0 0 1.5 1.5h12a1.5 1.5 0 0 0 1.5-1.5v-3" /></svg></span>
                 <p className="dwg-drop-title">도면 파일을 여기에 끌어다 놓으세요</p>
                 <p className="dwg-muted">
                   {canDwg ? 'AutoCAD 도면(DWG, DXF)을 열 수 있어요. 30MB까지 돼요.' : '이 PC에는 DWG 변환기가 없어서 DXF 파일만 열 수 있어요. 30MB까지 돼요.'}
@@ -353,19 +356,24 @@ export default function DwgImport({ onApply, onClose }) {
               <section>
                 <h3>1. 방 고르기</h3>
                 {plan.rooms.length ? (
-                  <ul className="dwg-list">
-                    {plan.rooms.map((r, i) => (
-                      <li key={i}>
+                  <div className="dwg-rooms" role="group" aria-label={`방 후보 ${plan.rooms.length}개`}>
+                    {plan.rooms.map((r, i) => {
+                      // 작은 그림: 가장 큰 후보를 기준으로 서로의 크기 차이가 보이게 그린다
+                      const s = Math.min(40 / candMax.w, 30 / candMax.h);
+                      const gw = Math.max(r.w * s, 6);
+                      const gh = Math.max(r.h * s, 6);
+                      return (
                         <button
-                          type="button" className={`dwg-room${sel?.cand === i ? ' is-on' : ''}`} aria-pressed={sel?.cand === i}
+                          key={i} type="button" className={`dwg-room${sel?.cand === i ? ' is-on' : ''}`} aria-pressed={sel?.cand === i} title={r.label || `방 ${i + 1}`}
                           onClick={() => { pick(i); fit({ x: r.x - r.w * 0.6, y: r.y - r.h * 0.6, w: r.w * 2.2, h: r.h * 2.2 }); }}
                         >
-                          <b>{r.label || `방 후보 ${i + 1}`}</b>
-                          <span>{(r.w / 100).toFixed(1)} × {(r.h / 100).toFixed(1)} m</span>
+                          <svg viewBox="0 0 48 36" aria-hidden="true"><rect x={(48 - gw) / 2} y={(36 - gh) / 2} width={gw} height={gh} /></svg>
+                          <b>{r.label || `방 ${i + 1}`}</b>
+                          <span>{(r.w / 100).toFixed(1)}×{(r.h / 100).toFixed(1)}m</span>
                         </button>
-                      </li>
-                    ))}
-                  </ul>
+                      );
+                    })}
+                  </div>
                 ) : (
                   <p className="dwg-muted">방 후보를 찾지 못했어요. 아래 버튼으로 직접 그려 주세요.</p>
                 )}

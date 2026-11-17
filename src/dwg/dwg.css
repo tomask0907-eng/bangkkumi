@@ -1,95 +1,108 @@
-/* DWG 불러오기 모달. 색·모서리는 테마 변수(theme.css)를 따르고, 테마가 없으면 뒤의 기본값을 쓴다. */
+/* DWG 불러오기 모달. 색·모서리는 새 디자인(src/v3/theme.css)의 변수를 따르고, 테마가 없으면 뒤의 기본값을 쓴다. */
 .dwg-overlay {
   /* 테마 변수 이름이 바뀌어도 여기 한 곳만 고치면 된다 */
-  --dwg-accent: var(--accent-600, var(--accent, #b5713e));
-  --dwg-accent-soft: var(--accent-50, var(--accent-soft, #f6e9dd));
-  --dwg-accent-strong: var(--accent-800, #7d4a22);
-  --dwg-on-accent: var(--text-on-accent, #fff);
-  --dwg-text: var(--text, #2b2620);
-  --dwg-muted: var(--text-3, var(--muted, #6f665b));
-  --dwg-surface: var(--surface, #fffdf9);
-  --dwg-bg: var(--surface-2, var(--bg, #f8f4ee));
-  --dwg-border: var(--line-strong, var(--border, #d9d0c3));
-  --dwg-danger: var(--error-text, var(--danger, #b3261e));
-  --dwg-danger-bg: var(--error-bg, #fdecea);
-  --dwg-ink: var(--plan-ink, #4a433b);
-  --dwg-select: #2f6fde; /* 고른 방은 후보(강조색)와 헷갈리지 않게 파란색으로 고정 */
-  --dwg-select-soft: #e9f0fd;
-  --dwg-door: var(--warn, #d9822b);
-  --dwg-r-sm: var(--r-sm, var(--radius-sm, 8px));
-  --dwg-r: var(--r-md, var(--radius, 12px));
-  --dwg-r-lg: var(--r-lg, var(--radius-lg, 16px));
-  --dwg-shadow: var(--shadow-lg, 0 24px 60px rgba(0, 0, 0, 0.25));
-  position: fixed; inset: 0; z-index: var(--z-modal, 1000);
+  --dwg-accent: var(--accent-strong, #296BB0);
+  --dwg-accent-line: var(--accent, #2F81CC);
+  --dwg-accent-soft: var(--accent-tint, #EDF4FC);
+  --dwg-accent-soft-2: var(--accent-tint-2, #DCE9F8);
+  --dwg-accent-strong: var(--accent-on-tint, #225892);
+  --dwg-on-accent: #fff;
+  --dwg-text: var(--ink, #141A23);
+  --dwg-text-2: var(--ink-2, #4A5463);
+  --dwg-muted: var(--ink-3, #667080);
+  --dwg-surface: var(--surface, #fff);
+  --dwg-bg: var(--surface-2, #F7F9FB);
+  --dwg-line: var(--line, #E4E8EE);
+  --dwg-border: var(--line-strong, #CDD4DE);
+  --dwg-danger: var(--err-text, #BE232B);
+  --dwg-danger-bg: var(--err-tint, #FFEEEE);
+  --dwg-ink: var(--plan-line, #3A4557);
+  --dwg-select: var(--accent-strong, #296BB0); /* 고른 방: 짙은 파랑 굵은 선. 후보는 옅은 파랑 면에 점선 */
+  --dwg-select-soft: var(--accent-tint, #EDF4FC);
+  --dwg-door: var(--warn, #F59E0B);
+  --dwg-r-sm: 10px;
+  --dwg-r: var(--r-m, 12px);
+  --dwg-r-lg: var(--r-xl, 24px);
+  --dwg-shadow: var(--sh-3, 0 12px 32px rgba(20, 26, 35, 0.12), 0 2px 6px rgba(20, 26, 35, 0.06));
+  position: fixed; inset: 0; z-index: 1000;
   display: flex; align-items: center; justify-content: center;
   padding: 16px;
-  background: rgba(30, 24, 18, 0.5);
+  background: rgba(20, 26, 35, 0.42);
 }
 .dwg-dialog {
   display: flex; flex-direction: column; gap: 12px;
   /* 안쪽 여백까지 넣어서 재야 max-height 100%가 화면 밖으로 나가지 않는다 */
   box-sizing: border-box;
   width: min(1160px, 100%); max-height: 100%;
-  padding: 20px;
+  padding: 20px 22px 22px;
   overflow: auto;
   color: var(--dwg-text);
   background: var(--dwg-surface);
   border-radius: var(--dwg-r-lg);
   box-shadow: var(--dwg-shadow);
-  font-family: inherit; font-size: 15px; line-height: 1.5;
+  font-family: inherit; font-size: 14px; line-height: 1.5;
 }
 /* 도면이 뜬 뒤에는 높이를 고정한다. 방을 고르거나 그리는 중에 내용이 늘어도 모달이 움직이지 않게 */
 .dwg-dialog.has-plan { height: min(100%, 760px); }
-.dwg-dialog.is-over { outline: 3px dashed var(--dwg-accent); outline-offset: -6px; }
+.dwg-dialog.is-over { outline: 3px dashed var(--dwg-accent-line); outline-offset: -6px; }
 .dwg-dialog * { box-sizing: border-box; }
 .dwg-dialog p { margin: 0; }
-.dwg-dialog :focus-visible { outline: 3px solid var(--dwg-accent); outline-offset: 2px; }
+.dwg-dialog :focus-visible { outline: 3px solid var(--dwg-accent-line); outline-offset: 2px; }
 
 .dwg-head { display: flex; align-items: center; gap: 12px; }
-.dwg-head h2 { margin: 0; font-size: 20px; }
+.dwg-head h2 { margin: 0; font-size: 20px; font-weight: 800; letter-spacing: -0.03em; }
 .dwg-file { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dwg-muted); font-size: 13px; }
 .dwg-x {
   margin-left: auto; width: 36px; height: 36px;
-  border: 0; border-radius: 50%; background: transparent; color: inherit;
+  border: 0; border-radius: 10px; background: transparent; color: var(--dwg-muted);
   font-size: 24px; line-height: 1; cursor: pointer;
 }
-.dwg-x:hover { background: var(--dwg-bg); }
+.dwg-x:hover { background: var(--bg, #F2F4F7); color: var(--dwg-text); }
 .dwg-hidden { display: none; }
 
 .dwg-muted { color: var(--dwg-muted); }
-.dwg-small { font-size: 13px; }
+.dwg-small { font-size: 12px; line-height: 1.5; }
 .dwg-error {
   padding: 10px 12px;
   color: var(--dwg-danger); background: var(--dwg-danger-bg);
-  border-radius: var(--dwg-r-sm);
+  border-radius: var(--dwg-r-sm); font-size: 13px; font-weight: 600;
 }
 
+/* 버튼: 새 디자인의 .btn 과 같은 모양 */
 .dwg-btn {
-  min-height: 36px; padding: 6px 14px;
+  display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+  height: 36px; padding: 0 14px;
   border: 1px solid var(--dwg-border); border-radius: var(--dwg-r-sm);
-  background: var(--dwg-surface); color: inherit;
-  font: inherit; cursor: pointer;
+  background: var(--dwg-surface); color: var(--dwg-text);
+  font: inherit; font-size: 13px; font-weight: 600; white-space: nowrap; cursor: pointer;
+  transition: background .15s, border-color .15s;
 }
-.dwg-btn:hover:not(:disabled) { border-color: var(--dwg-accent); }
+.dwg-btn:hover:not(:disabled) { background: var(--dwg-bg); border-color: #B5BECB; }
 .dwg-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.dwg-btn.is-on { border-color: var(--dwg-accent); background: var(--dwg-accent-soft); font-weight: 600; }
-.dwg-btn.dwg-primary { border-color: var(--dwg-accent); background: var(--dwg-accent); color: var(--dwg-on-accent); font-weight: 600; }
-.dwg-btn.dwg-primary:hover:not(:disabled) { filter: brightness(0.94); }
+.dwg-btn.is-on { border-color: transparent; background: var(--dwg-accent-soft); color: var(--dwg-accent-strong); font-weight: 700; }
+.dwg-btn.is-on:hover:not(:disabled) { background: var(--dwg-accent-soft-2); border-color: transparent; }
+.dwg-btn.dwg-primary { height: 40px; padding: 0 18px; border-color: var(--dwg-accent); border-radius: var(--dwg-r); background: var(--dwg-accent); color: var(--dwg-on-accent); font-size: 14px; box-shadow: var(--sh-accent, 0 6px 16px rgba(41, 107, 176, 0.28)); }
+.dwg-btn.dwg-primary:hover:not(:disabled) { background: var(--dwg-accent-strong); border-color: var(--dwg-accent-strong); }
+.dwg-btn.dwg-primary:disabled { box-shadow: none; }
+.dwg-actions .dwg-btn { height: 40px; border-radius: var(--dwg-r); font-size: 14px; }
 
 /* 파일 올리는 곳 */
 .dwg-drop {
   display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
   min-height: 300px; padding: 32px; text-align: center;
-  border: 2px dashed var(--dwg-border); border-radius: var(--dwg-r);
+  border: 1.5px dashed var(--dwg-border); border-radius: var(--r-l, 16px);
   background: var(--dwg-bg);
 }
-.dwg-drop.is-over { border-color: var(--dwg-accent); background: var(--dwg-accent-soft); }
-.dwg-drop-title { font-size: 18px; font-weight: 600; }
+.dwg-drop.is-over { border-color: var(--dwg-accent-line); background: var(--dwg-accent-soft); }
+.dwg-drop-title { font-size: 18px; font-weight: 700; letter-spacing: -0.02em; }
+.dwg-drop-ico { width: 56px; height: 56px; border-radius: 18px; background: var(--dwg-accent-soft); color: var(--dwg-accent); display: grid; place-items: center; }
+.dwg-drop-ico svg { width: 26px; height: 26px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.dwg-drop .dwg-primary { margin: 6px 0 2px; }
 .dwg-busy { display: flex; flex-direction: column; align-items: center; gap: 12px; }
 .dwg-busy progress { width: 240px; accent-color: var(--dwg-accent); }
 .dwg-spinner {
   width: 36px; height: 36px; border-radius: 50%;
-  border: 4px solid var(--dwg-border); border-top-color: var(--dwg-accent);
+  border: 4px solid var(--dwg-accent-soft-2); border-top-color: var(--dwg-accent);
   animation: dwg-spin 0.9s linear infinite;
 }
 @keyframes dwg-spin { to { transform: rotate(360deg); } }
@@ -103,8 +116,8 @@
 .dwg-gap { flex: 1; }
 .dwg-svg {
   width: 100%; flex: 1 1 0; min-height: 120px;
-  border: 1px solid var(--dwg-border); border-radius: var(--dwg-r);
-  background: #fff;
+  border: 1px solid var(--dwg-line); border-radius: var(--r-l, 16px);
+  background: var(--bg, #F2F4F7);
   touch-action: none; user-select: none;
   cursor: grab;
 }
@@ -112,16 +125,16 @@
 .dwg-svg.is-pan:active { cursor: grabbing; }
 .dwg-lines { fill: none; stroke: var(--dwg-ink); stroke-width: 1; vector-effect: non-scaling-stroke; }
 .dwg-cand rect {
-  fill: var(--dwg-accent); fill-opacity: 0.14;
-  stroke: var(--dwg-accent); stroke-width: 1.5; vector-effect: non-scaling-stroke;
+  fill: var(--dwg-accent-line); fill-opacity: 0.12;
+  stroke: var(--dwg-accent-line); stroke-width: 1.2; stroke-dasharray: 5 4; vector-effect: non-scaling-stroke;
   cursor: pointer;
 }
-.dwg-svg.is-pan .dwg-cand:hover rect { fill-opacity: 0.3; }
+.dwg-svg.is-pan .dwg-cand:hover rect { fill-opacity: 0.26; }
 .dwg-svg.is-draw .dwg-cand { pointer-events: none; opacity: 0.5; }
 .dwg-cand.is-picked rect { fill-opacity: 0; stroke-opacity: 0; }
 .dwg-cand text { fill: var(--dwg-accent-strong); font-weight: 600; pointer-events: none; paint-order: stroke; stroke: #fff; stroke-width: 3; vector-effect: non-scaling-stroke; }
 .dwg-sel { pointer-events: none; }
-.dwg-sel rect { fill: var(--dwg-select); fill-opacity: 0.16; stroke: var(--dwg-select); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
+.dwg-sel rect { fill: var(--dwg-accent-line); fill-opacity: 0.2; stroke: var(--dwg-select); stroke-width: 2.5; vector-effect: non-scaling-stroke; }
 .dwg-sel line { stroke: var(--dwg-door); stroke-width: 6; stroke-linecap: round; vector-effect: non-scaling-stroke; }
 .dwg-sel text { fill: var(--dwg-select); font-weight: 700; paint-order: stroke; stroke: #fff; stroke-width: 3; vector-effect: non-scaling-stroke; }
 .dwg-snap { fill: none; stroke: var(--dwg-select); stroke-width: 2; vector-effect: non-scaling-stroke; pointer-events: none; }
@@ -130,26 +143,31 @@
 /* scroll-padding: Tab으로 옮긴 초점이 아래에 붙은 버튼 줄 뒤에 숨지 않게 */
 .dwg-side { display: flex; flex-direction: column; gap: 16px; min-width: 0; min-height: 0; overflow: auto; margin: -6px; padding: 6px 6px 0; scroll-padding-bottom: 64px; }
 .dwg-side section { display: flex; flex-direction: column; gap: 8px; }
-.dwg-side h3 { margin: 0; font-size: 15px; }
-.dwg-list { display: flex; flex-direction: column; gap: 4px; max-height: 232px; margin: 0; padding: 2px; overflow: auto; list-style: none; }
-.dwg-room {
-  display: flex; justify-content: space-between; gap: 8px;
-  width: 100%; padding: 7px 10px;
-  border: 1px solid var(--dwg-border); border-radius: var(--dwg-r-sm);
-  background: var(--dwg-surface); color: inherit; font: inherit; text-align: left; cursor: pointer;
+.dwg-side h3 { margin: 0; font-size: 14px; font-weight: 700; }
+.dwg-side section + section { padding-top: 14px; border-top: 1px solid var(--dwg-line); }
+/* 방 후보: 시안의 .dwg-rooms (작은 방 그림 + 이름 + 크기). 테마가 없을 때도 같은 모양이 나오게 여기에도 적는다 */
+.dwg-side .dwg-rooms { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; max-height: 236px; margin: 0; padding: 3px; overflow: auto; scrollbar-width: thin; }
+.dwg-side .dwg-rooms button {
+  display: grid; justify-items: center; gap: 1px; min-width: 0; padding: 8px 4px 6px;
+  border: 1px solid var(--dwg-line); border-radius: var(--dwg-r);
+  background: var(--dwg-surface); color: var(--dwg-muted); font: inherit; font-size: 12px; line-height: 1.35; cursor: pointer;
 }
-.dwg-room b { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
-.dwg-room span { flex: none; color: var(--dwg-muted); }
-.dwg-room:hover { border-color: var(--dwg-accent); }
-.dwg-room.is-on { border-color: var(--dwg-select); background: var(--dwg-select-soft); }
+.dwg-side .dwg-rooms button:hover { border-color: var(--dwg-border); background: var(--dwg-bg); }
+.dwg-side .dwg-rooms svg { width: 40px; height: 30px; fill: #fff; stroke: var(--plan-wall, #3D4756); stroke-width: 2; }
+.dwg-side .dwg-rooms b { display: block; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--dwg-text); font-weight: 700; }
+.dwg-side .dwg-rooms span { max-width: 100%; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.dwg-side .dwg-rooms button[aria-pressed="true"] { border-color: var(--dwg-accent-line); box-shadow: 0 0 0 2px var(--dwg-accent-line); background: var(--dwg-surface); }
+.dwg-side .dwg-rooms button[aria-pressed="true"] svg { fill: var(--dwg-accent-soft); }
 .dwg-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.dwg-field { display: flex; flex-direction: column; gap: 4px; flex: 1; min-width: 100px; font-size: 13px; color: var(--dwg-muted); }
+.dwg-field { display: flex; flex-direction: column; gap: 6px; flex: 1; min-width: 100px; font-size: 12px; font-weight: 600; color: var(--dwg-text-2); }
 .dwg-field input {
-  width: 100%; min-height: 36px; padding: 6px 10px;
+  width: 100%; height: 40px; padding: 0 12px;
   border: 1px solid var(--dwg-border); border-radius: var(--dwg-r-sm);
-  background: var(--dwg-surface); color: var(--dwg-text); font: inherit;
+  background: var(--dwg-surface); color: var(--dwg-text); font: inherit; font-size: 14px; font-weight: 500; font-variant-numeric: tabular-nums;
 }
-.dwg-size { font-weight: 600; }
+.dwg-field input:hover { border-color: #AEB8C6; }
+.dwg-field input:focus { outline: 0; border-color: var(--dwg-accent-line); box-shadow: 0 0 0 3px var(--dwg-accent-soft-2); }
+.dwg-size { padding: 10px 12px; border-radius: var(--dwg-r); background: var(--dwg-accent-soft); color: var(--dwg-text); font-weight: 700; font-variant-numeric: tabular-nums; }
 /* 화면이 낮아 옆 칸을 스크롤해야 할 때도 [이 방으로 설정]은 항상 보이게 아래에 붙여 둔다 */
 .dwg-actions {
   display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end;

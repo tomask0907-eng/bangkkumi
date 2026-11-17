@@ -49,16 +49,21 @@ export function extractJson(text) {
 // 이 노트북에 로그인된 Claude Code(claude 명령)로 글을 만든다. 키가 브라우저로 나가지 않는다.
 // 사용자 입력은 명령 인자가 아니라 stdin으로만 넘긴다 (명령 주입 방지).
 // webSearch: true면 웹 검색 도구만 허용한다 (가격 시세 조사용). 그 밖의 도구는 항상 꺼 둔다.
-export function askClaude(prompt, { timeoutMs = 60000, model = process.env.ADVICE_MODEL || 'haiku', webSearch = false } = {}) {
+// tools: 허용할 도구 이름 목록. ASK_TOOLS 에 있는 것만 받는다(사진 읽기 = ['Read'], 링크 읽기 = ['WebFetch', 'WebSearch']).
+// cwd: claude 를 실행할 폴더. 서버가 직접 만든 경로만 넘긴다(명령줄 인자가 아니라 spawn 옵션으로 간다).
+export const ASK_TOOLS = ['WebSearch', 'WebFetch', 'Read'];
+export function askClaude(prompt, { timeoutMs = 60000, model = process.env.ADVICE_MODEL || 'haiku', webSearch = false, tools = null, cwd = os.tmpdir() } = {}) {
   return new Promise((resolve, reject) => {
     if (!/^[\w.-]+$/.test(model)) return reject(new Error('모델 이름이 올바르지 않아요'));
+    const allow = [...new Set([...(webSearch ? ['WebSearch'] : []), ...(Array.isArray(tools) ? tools : [])])];
+    if (allow.some((t) => !ASK_TOOLS.includes(t))) return reject(new Error('허용되지 않은 도구예요'));
     const args = [
       '-p', '--output-format', 'json', '--model', model,
-      ...(webSearch ? ['--tools', 'WebSearch', '--allowedTools', 'WebSearch'] : ['--tools', '""']), '--no-session-persistence',
+      ...(allow.length ? ['--tools', allow.join(','), '--allowedTools', allow.join(',')] : ['--tools', '""']), '--no-session-persistence',
       '--system-prompt', '"You are a Korean interior design assistant. Reply with JSON only."',
     ];
     // Windows에서는 claude가 .cmd/.ps1 이라 shell이 필요하다.
-    const child = spawn('claude', args, { shell: true, cwd: os.tmpdir(), windowsHide: true });
+    const child = spawn('claude', args, { shell: true, cwd, windowsHide: true });
     let out = '';
     let err = '';
     const timer = setTimeout(() => { child.kill(); reject(new Error('AI 응답 시간 초과')); }, timeoutMs);

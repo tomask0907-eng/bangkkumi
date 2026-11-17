@@ -1,1 +1,92 @@
-/* 가구 패널과 상품 고르기에만 필요한 규칙 (공통 부품과 색은 theme.css) */
+/* 가구 패널(FurnitureInput)과 숫자·가격 칸(inputs.jsx). theme.css 에 없는 규칙만 둔다. 색은 변수만 쓴다 */
+
+/* ── 숫자 칸·가격 칸 (방·가구·비용 패널이 함께 쓴다) ── */
+input[type="number"] { -moz-appearance: textfield; appearance: textfield; }
+input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+.input[aria-invalid="true"], .dims input[aria-invalid="true"] { border-color: var(--err); box-shadow: 0 0 0 3px var(--err-tint); }
+.dims input:disabled, .ref-box .input:disabled, .ref-box .btn:disabled { opacity: .55; cursor: not-allowed; }
+.price-edit { display: inline-flex; align-items: center; gap: 2px; min-width: 0; max-width: 100%; }
+.price-edit .unit { flex: 1; min-width: 0; }
+.price-edit .unit .input { text-align: right; font-weight: 700; padding-right: 28px; padding-left: 6px; }
+.price-edit .unit i { right: 10px; }
+.price-edit.is-user .unit .input { border-color: var(--warm); }
+.price-edit.is-user .unit .input:focus { border-color: var(--accent); }
+.price-edit .iconbtn.undo { margin: 0; flex: none; }
+
+/* ── 글로 적기·빠른 추가: 접혀 있으면 한 줄(칩 3개 + 더 보기 + 가구 알아보기) ── */
+.quick.fq { gap: 5px; margin-top: 8px; flex-wrap: nowrap; }
+.quick.fq.is-all { flex-wrap: wrap; }
+.quick.fq .btn { flex: none; height: 28px; padding: 0 8px 0 6px; gap: 3px; font-size: var(--fs-12); border-radius: 99px; border-color: var(--line); color: var(--ink-2); }
+.quick.fq .btn:hover { border-color: var(--accent); color: var(--accent-on-tint); background: var(--accent-tint); }
+.quick.fq .btn.fq-more { padding: 0 8px; border-style: dashed; color: var(--ink-3); }
+.quick.fq .btn.fq-go { height: 30px; margin-left: auto; padding: 0 10px; border-radius: 10px; border-color: transparent; color: var(--accent-on-tint); font-size: var(--fs-13); }
+.quick.fq .btn.fq-go:hover { background: var(--accent-tint-2); }
+.quick.fq .btn .ic { width: 11px; height: 11px; color: var(--ink-3); }
+
+/* ── 실제 상품에서 고르기 + 사진·링크로 추가: 한 줄에 나란히 ── */
+.fi-add { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; margin-top: 10px; }
+.fi-add .btn { height: 42px; padding: 0 10px; gap: 5px; border-radius: 12px; white-space: nowrap; min-width: 0; }
+.fi-add .fi-pick { font-size: var(--fs-14); font-weight: 700; letter-spacing: -0.02em; }
+.fi-add .ref-toggle { font-size: var(--fs-13); }
+.fi-add .ref-toggle[aria-expanded="true"] { background: var(--accent-tint-2); }
+.fi-add .ref-toggle .spin { width: 12px; height: 12px; }
+.fi-add > .btn:only-child { grid-column: 1 / -1; }
+
+/* ── 사진·링크로 추가 상자 ── */
+.ref-box { margin-top: 6px; padding: 10px; }
+.ref-box[hidden] { display: none; }
+.ref-box .ref-row:first-child { margin-top: 0; }
+.ref-box .input { background: var(--surface); }
+.ref-row { display: flex; align-items: center; gap: 8px; margin-top: 8px; min-width: 0; }
+.ref-row .btn { flex: none; background: var(--surface); }
+.ref-row .hint { min-width: 0; line-height: 1.35; }
+.ref-err { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; font-size: var(--fs-12); font-weight: 600; color: var(--err-text); line-height: 1.5; }
+.ref-err .ic { margin-top: 2px; }
+.ref-note { display: flex; align-items: flex-start; gap: 6px; margin-top: 8px; color: var(--ink-2); }
+.ref-note .ic { flex: none; margin-top: 2px; color: var(--ok-text); }
+
+/* ── 알아본 가구 줄: 첫 줄 이름·가격·빼기, 둘째 줄 치수·이미 있어요 ── */
+.item.fi { align-items: start; padding-top: 10px; padding-bottom: 10px; }
+.item.fi > .th { margin-top: 2px; }
+.fi-main { min-width: 0; grid-column: 2 / -1; }
+.fi .nm { min-width: 0; min-height: 24px; }
+.fi-name { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fi .nm .badge { flex: none; }
+.fi .nm .price { flex: none; margin-left: auto; padding: 2px 4px; margin-right: -4px; border: 0; border-radius: 6px; background: transparent; font-weight: 700; font-size: var(--fs-14); color: var(--ink); }
+.fi .nm button.price:hover, .fi.is-open .nm button.price { background: var(--accent-tint); color: var(--accent-on-tint); }
+.fi .nm .price.is-wait { color: var(--ink-3); font-weight: 600; font-size: var(--fs-13); }
+.fi.is-owned .nm .price { color: var(--ink-3); font-weight: 600; text-decoration: line-through; }
+.fi .nm .iconbtn.fi-ib { flex: none; width: 24px; height: 24px; border-radius: 7px; margin: 0 -2px 0 0; }
+.fi .nm .iconbtn.fi-ib + .fi-ib { margin-left: -6px; }
+.fi .nm .iconbtn.fi-ib:last-child { margin-right: -6px; }
+.fi .nm .iconbtn.fi-ib.is-gap { visibility: hidden; pointer-events: none; }
+.fi .nm .iconbtn.fi-ib:hover { color: var(--accent-on-tint); background: var(--accent-tint); }
+.fi-ellip { min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi .sub.fi-prod { display: flex; align-items: center; gap: 8px; margin-top: 1px; }
+.fi .sub.fi-prod .fi-ellip { flex: 1; }
+.fi .sub.fi-prod .linkbtn { flex: none; }
+.fi-l2 { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 5px; min-height: 28px; }
+.fi-l2 .dims { margin-top: 0; gap: 3px; min-width: 0; }
+.fi-l2 .dims input { width: 42px; height: 28px; }
+.fi .sub.rowx { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; margin-top: 5px; }
+.fi .dims.fi-real { display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fi .dims.fi-real b { color: var(--ink); font-weight: 600; font-size: var(--fs-13); }
+.fi-tint { width: 12px; height: 12px; flex: none; border-radius: 50%; border: 1px solid rgba(20,26,35,.18); }
+.th.th-photo { overflow: hidden; background: #fff; }
+.th.th-photo img { display: block; width: 100%; height: 100%; object-fit: contain; padding: 2px; }
+.switch.sm { flex: none; height: 26px; padding: 0; gap: 5px; font-size: var(--fs-12); background: transparent; color: var(--ink-3); }
+.switch.sm::before { width: 28px; height: 16px; flex: none; background: radial-gradient(circle at 20px 8px, #fff 5.5px, transparent 6px) var(--accent-strong); }
+.switch.sm[aria-checked="false"]::before { background: radial-gradient(circle at 8px 8px, #fff 5.5px, transparent 6px) #A4AEBC; }
+.switch.sm[aria-checked="true"] { color: var(--accent-on-tint); }
+.linkbtn { padding: 2px 0; border: 0; background: transparent; font-size: var(--fs-12); font-weight: 600; color: var(--accent-strong); white-space: nowrap; }
+.linkbtn:hover { text-decoration: underline; }
+.fi-edit { display: grid; grid-template-columns: minmax(0, 1fr) 132px; gap: 8px; align-items: end; padding: 10px 12px; margin-top: 4px; border-radius: var(--r-m); background: var(--surface-2); }
+.fi-edit > .field:only-child { grid-column: 1 / -1; max-width: 160px; }
+.fi-edit .price-edit { width: 100%; }
+.fi-edit .fi-find { grid-column: 1 / -1; justify-self: start; display: inline-flex; align-items: center; gap: 5px; }
+.fi-full { margin-top: 8px; }
+.sec .empty-msg { padding: 24px 12px; }
+/* 방금 넣은 줄을 잠깐 옅은 파랑으로 알려 준다 */
+.item.fi.is-new { animation: fi-new 2s ease-out 1; }
+@keyframes fi-new { 0%, 35% { box-shadow: inset 0 0 0 99px var(--accent-tint); } 100% { box-shadow: inset 0 0 0 99px transparent; } }
+@media (prefers-reduced-motion: reduce) { .item.fi.is-new { animation: none; } }

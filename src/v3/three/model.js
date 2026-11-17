@@ -26,14 +26,35 @@ const WHITE = '#ffffff', SEAM = '#bac4d0', METAL = '#c9d3df', STEEL = '#7f8c9d',
 const GREENS = ['#5ba688', '#3f8c6e', '#6db698'];
 const DEFAULT_PALETTE = ['#f3f6f8', '#e3cdae', '#8fb8de', '#f2c6a0', '#3f5f7f']; // 시안의 북유럽
 
+const luma = (hex) => { const [r, g, b] = rgb(hex); return (0.299 * r + 0.587 * g + 0.114 * b) / 255; };
+const isHex = (v) => typeof v === 'string' && HEX.test(v);
+
+// 스타일 팔레트(벽, 바닥, 메인 가구, 패브릭, 포인트) → 시안의 5색 [--c1 벽, --c2 메인 가구, --c3 패브릭, --c4 포인트, --c5 짙은 색].
+// 평면도의 paletteVars(src/v3/symbols.jsx)와 같은 대응이다: 바닥색은 쓰지 않고, 짙은 색은 다섯 색 가운데 가장 어두운 색.
+export function paletteFive(style) {
+  const pal = (Array.isArray(style?.palette) ? style.palette : []).slice(0, 5).map((p) => (isHex(p?.hex) ? p.hex.toLowerCase() : null));
+  const valid = pal.filter(Boolean);
+  const darkest = valid.length ? [...valid].sort((a, b) => luma(a) - luma(b))[0] : null;
+  const dark = darkest && (luma(darkest) < 0.4 ? darkest : mix(darkest, '#141a23', 0.6));
+  return [pal[0], pal[2], pal[3], pal[4], dark].map((v, i) => v || DEFAULT_PALETTE[i]);
+}
+
 // 스타일 5색 → 가구 역할 색. 평면도와 같은 식이다(tokens.css 의 --pw, --pb, --pb2, --pr).
-// 5색은 팔레트 순서 그대로 --c1~--c5 로 본다. css 에 화면의 --c1~--c5 값을 주면 그 값이 먼저다(평면도와 어긋나지 않게).
+// css 에 화면의 --c1~--c5 값을 주면 그 값이 먼저다. 없으면 팔레트에서 평면도와 같은 대응으로 만든다(어느 쪽이든 평면도와 같은 색).
 export function colorsOf(style, css = []) {
-  const pal = Array.isArray(style?.palette) ? style.palette : [];
-  const c = DEFAULT_PALETTE.map((def, i) => [css[i], pal[i]?.hex, def].find((v) => typeof v === 'string' && HEX.test(v)).toLowerCase());
+  const five = paletteFive(style);
+  const c = five.map((def, i) => (isHex(css[i]) ? css[i].toLowerCase() : def));
   const tint = (hex, k) => mix('#ffffff', hex, k);
   const wood = tint(c[1], 0.66);
-  return { wood, wood2: shade(wood, -0.1), fabric: tint(c[2], 0.56), fabric2: tint(c[2], 0.26), rug: tint(c[3], 0.58), small: c[4], c3: c[2], c4: c[3] };
+  return { wood, wood2: shade(wood, -0.1), fabric: tint(c[2], 0.56), fabric2: tint(c[2], 0.26), rug: tint(c[3], 0.58), small: c[4], c3: c[2], c4: c[3], body: WHITE };
+}
+
+// 사진·링크로 추가한 가구(spec.tint = '#rrggbb')는 스타일 색 대신 그 가구의 대표 색으로 칠한다.
+// 섞는 비율은 스타일 색과 같다(평면도의 tintVars 와 같은 값). 책·옷·소품 색(small, c3, c4)은 그대로 둔다.
+export function tintColors(C, tint) {
+  if (!isHex(tint)) return C;
+  const t = (k) => mix('#ffffff', tint.toLowerCase(), k), wood = t(0.66);
+  return { ...C, wood, wood2: shade(wood, -0.1), fabric: t(0.56), fabric2: t(0.26), rug: t(0.58), body: wood };
 }
 
 // ---------- 방 ----------
@@ -254,9 +275,9 @@ const BUILD = {
   },
   vanity: (it, C) => BUILD.desk(it, C, it, true),
   wardrobe({ w, d, h }, C) {
-    const n = Math.max(1, Math.round(w / 50)), dw = w / n;
+    const n = Math.max(1, Math.round(w / 50)), dw = w / n, B = C.body || WHITE;
     return [
-      p(WHITE, w, h, d - 2.5, 0, 0, -1.25), ...fronts(WHITE, SEAM, w, h, d, n, 1, 3),
+      p(B, w, h, d - 2.5, 0, 0, -1.25), ...fronts(B, B === WHITE ? SEAM : shade(B, -0.18), w, h, d, n, 1, 3),
       ...Array.from({ length: n }, (_, i) => p(STEEL, 1.2, 22, 1.4, -w / 2 + dw * (i + 0.5) + (n === 1 || i % 2 === 0 ? 1 : -1) * (dw / 2 - 4), h * 0.46, d / 2 + 0.3)), // 손잡이는 짝이 되는 문 쪽에
     ];
   },
@@ -335,18 +356,18 @@ const BUILD = {
       ...(d > 12 ? [p(C.wood, w * 0.8, 2, d)] : []),
     ];
   },
-  fridge({ w, d, h }) {
-    const split = h >= 120 ? 0.62 : 1, hh = Math.min(40, h * 0.25); // 큰 냉장고는 위아래 두 문
+  fridge({ w, d, h }, C) {
+    const split = h >= 120 ? 0.62 : 1, hh = Math.min(40, h * 0.25), B = C.body || WHITE; // 큰 냉장고는 위아래 두 문
     return [
-      p(WHITE, w, h, d - 2.5, 0, 0, -1.25), ...fronts(WHITE, SEAM, w, h * split, d, 1, 1, 2),
+      p(B, w, h, d - 2.5, 0, 0, -1.25), ...fronts(B, SEAM, w, h * split, d, 1, 1, 2),
       p(STEEL, 1.6, hh, 1.6, -w / 2 + 6, h * split - 6 - hh, d / 2 + 0.4),
-      ...(split < 1 ? [...fronts(WHITE, SEAM, w, h, d, 1, 1, h * split), p(STEEL, 1.6, Math.min(30, h * 0.18), 1.6, -w / 2 + 6, h * split + 5, d / 2 + 0.4)] : []),
+      ...(split < 1 ? [...fronts(B, SEAM, w, h, d, 1, 1, h * split), p(STEEL, 1.6, Math.min(30, h * 0.18), 1.6, -w / 2 + 6, h * split + 5, d / 2 + 0.4)] : []),
     ];
   },
-  washer({ w, d, h }) {
+  washer({ w, d, h }, C) {
     const r = Math.min(w, h) * 0.62;
     return [
-      p(WHITE, w, h, d - 3, 0, 0, -1.5, 'soft'), p(SEAM, w - 8, 7, 1, 0, h - 11, d / 2 - 2.5),
+      p(C.body || WHITE, w, h, d - 3, 0, 0, -1.5, 'soft'), p(SEAM, w - 8, 7, 1, 0, h - 11, d / 2 - 2.5),
       p(METAL, r, r, 2, 0, h * 0.44 - r / 2, d / 2 - 2, 'cylf'), p(DARK, r * 0.74, r * 0.74, 2.6, 0, h * 0.44 - r * 0.37, d / 2 - 1.5, 'cylf', { g: 1 }),
     ];
   },
@@ -380,8 +401,8 @@ const BUILD = {
     ];
   },
   chair: ({ w, d, h }, C) => chair(C, 0, 0, -1, w, d, h),
-  appliance({ w, d, h }) {
-    return [p(WHITE, w, h, d - 2, 0, 0, -1, 'soft'), p(SEAM, w * 0.7, h * 0.6, 1.5, -w * 0.1, h * 0.2, d / 2 - 1.5)];
+  appliance({ w, d, h }, C) {
+    return [p(C.body || WHITE, w, h, d - 2, 0, 0, -1, 'soft'), p(SEAM, w * 0.7, h * 0.6, 1.5, -w * 0.1, h * 0.2, d / 2 - 1.5)];
   },
   // 모르는 가구: 나무색 상자. 앉는 가구는 패브릭 색. 옛 분류 색(it.color)은 갈색 계열이라 쓰지 않는다.
   box({ w, d, h, category }, C) {
@@ -403,7 +424,7 @@ export const rotDims = (it) => (it.rot % 180 === 0 ? { w: it.w, h: it.d } : { w:
 export function itemBoxes(it, C) {
   const { w: bw, h: bh } = rotDims(it), cx = it.x + bw / 2, cy = it.y + bh / 2;
   const [cos, sin] = [[1, 0], [0, 1], [-1, 0], [0, -1]][ROTS.indexOf(it.rot)] || [1, 0];
-  return furnitureParts(it, C).map(({ c, w, h, d, x, y, z, s, ...extra }) => {
+  return furnitureParts(it, tintColors(C, it.tint)).map(({ c, w, h, d, x, y, z, s, ...extra }) => {
     const px = cx + x * cos - z * sin, py = cy + x * sin + z * cos;
     const turned = it.rot % 180 !== 0 && s !== 'leaf'; // 잎은 제 방향(az)으로 돌려 놓으므로 폭·깊이를 바꾸지 않는다
     const ex = (turned ? d : w) / 2, ey = (turned ? w : d) / 2;

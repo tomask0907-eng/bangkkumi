@@ -50,3 +50,38 @@
   .hero h1 { font-size: 72px; } .hero .pitch { font-size: 20px; }
   .feats { padding-bottom: 48px; } .feat { padding: 22px 24px; }
 }
+
+/* ── 좁은 화면 대응. 넓은 화면(폭 1280px 이상)의 모양은 여기서 건드리지 않아요 ── */
+/* 폭 900~1279px: 두 칸은 그대로 두고, 예상 합계 카드가 화면 오른쪽 밖으로 나가지 않게만 붙잡아요 */
+@media (max-width: 1279px) {
+  .fcard.total { left: min(calc(50% + 147 * var(--u)), calc(100% - 192px)); }
+}
+/* 폭 900px 미만(태블릿 세로, 휴대폰): 위 막대 → 제목과 버튼 → 그림 판 → 기능 카드 순서로 한 칸에 쌓고, 페이지를 세로로 스크롤해요 */
+@media (max-width: 899px) {
+  .landing { height: auto; min-height: 100vh; overflow: visible; --px: clamp(16px, 5vw, 40px); }
+  .lnav { height: 60px; gap: 8px; }
+  .lnav .links { margin-left: 12px; }
+  .hero { display: block; flex: none; padding-top: 20px; }
+  .hero h1 { font-size: clamp(34px, 9.6vw, 56px); margin: 14px 0 12px; }
+  .hero .pitch { font-size: clamp(15px, 3.6vw, 17px); line-height: 1.6; }
+  .hero .cta { flex-wrap: wrap; margin-top: 22px; }
+  .hero .proof { flex-wrap: wrap; gap: 6px 16px; margin-top: 16px; }
+  /* 그림 판: 폭에 맞춘 네모. 떠 있는 카드는 판 안쪽 위·아래 띠에 두고, 방 그림은 그 사이에 놓아요 */
+  .hero-art { margin: 28px 0 0; height: clamp(400px, calc(100vw - 2 * var(--px)), 620px); border-radius: 28px; }
+  .hero-art .iso-room { inset: 76px 4% 100px; width: 92%; height: calc(100% - 176px); }
+  .fcard.score { left: 12px; top: 12px; }
+  .fcard.price { right: 12px; top: 12px; }
+  .fcard.total { left: auto; right: 12px; top: auto; bottom: 12px; }
+  .feats { grid-template-columns: 1fr; gap: 10px; padding: 24px var(--px) 32px; }
+  .feat { padding: 16px 18px; } .feat .ico { width: 52px; height: 52px; }
+  .landing .btn.lg { height: 52px; }
+}
+@media (max-width: 599px) {
+  .lnav .links { display: none; }
+  .fcard.price { display: none; } /* 판이 좁아 카드 두 개가 나란히 들어가지 않아요 */
+  .hero .cta .btn { flex: 1 1 140px; }
+}
+@media (max-width: 419px) {
+  .lnav .btn.ghost { display: none; } /* [예시로 보기]는 바로 아래 큰 버튼에 있어요 */
+  .fcard.total { left: 12px; min-width: 0; }
+}

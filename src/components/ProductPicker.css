@@ -1,46 +1,93 @@
-/* 상품 고르기 모달(ProductPicker.jsx). 색·간격·글꼴은 theme.css 변수만 쓴다. 틀은 theme.css 의 .modal 을 쓴다 */
-.modal.pp-modal { width: min(1180px, 100%); height: min(94dvh, 900px); max-height: none; }
-.pp-head { align-items: flex-start; }
-.pp-desc { margin-top: 2px; font-size: var(--fs-sm); color: var(--text-3); }
+/* 상품 고르기 모달(ProductPicker.jsx) — v3 "커머스 클린". 색·모서리는 src/v3/theme.css 의 변수만 쓴다.
+   창의 틀(.pp-backdrop, .pp-modal)도 여기서 정한다. 크기는 vh 가 아니라 바깥 요소의 %로 잡는다(.app 의 zoom 안에서도 넘치지 않게) */
+.pp-backdrop { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; padding: 16px; background: rgba(20, 26, 35, .46); animation: pp-fade .18s ease-out; }
+.pp-modal { container-type: size; width: min(1240px, 100%); height: 100%; max-height: 900px; min-height: 0; display: flex; flex-direction: column; overflow: hidden;
+  background: var(--surface); border-radius: var(--r-xl); box-shadow: var(--sh-3); animation: pp-rise .22s cubic-bezier(.2, .8, .2, 1); }
+@keyframes pp-fade { from { opacity: 0; } }
+@keyframes pp-rise { from { opacity: 0; transform: translateY(10px); } }
+@media (prefers-reduced-motion: reduce) { .pp-backdrop, .pp-modal { animation: none; } }
+.pp-sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
 
-/* 검색·분류·정렬 */
-.pp-controls { display: flex; flex-direction: column; gap: var(--sp-2); padding: var(--sp-3) var(--sp-5); background: var(--surface-2); border-bottom: 1px solid var(--line); }
-.pp-row { display: flex; flex-wrap: wrap; align-items: center; gap: var(--sp-2) var(--sp-3); }
-.pp-search { position: relative; flex: 1 1 260px; min-width: 0; }
-.pp-search .icon { position: absolute; left: 10px; top: 50%; translate: 0 -50%; color: var(--text-3); pointer-events: none; }
-.pp-search .input { padding-left: 32px; background-color: var(--surface); }
-.select.pp-select { width: auto; flex: none; max-width: 100%; background-color: var(--surface); }
-.pp-chips { display: flex; flex-wrap: wrap; gap: 6px; flex: 1; min-width: 0; }
-/* 개수 자리는 미리 잡아 둔다(불러온 뒤 분류 칩 줄이 밀리지 않게) */
-.pp-count { min-width: 72px; text-align: right; margin-left: auto; align-self: flex-end; font-size: var(--fs-md); color: var(--text-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
-.pp-count b { font-weight: 800; color: var(--text); }
+/* 머리: 제목 · 검색 · 닫기 (한 줄) */
+.pp-head { display: flex; align-items: center; gap: 16px; padding: 12px 16px 10px 24px; flex: none; }
+.pp-title { flex: 0 1 auto; min-width: 0; }
+.pp-title h2 { font-size: var(--fs-20); font-weight: 800; letter-spacing: -0.03em; line-height: 1.3; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-desc { font-size: var(--fs-12); color: var(--ink-3); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-search { position: relative; flex: 1 1 280px; min-width: 200px; max-width: 520px; margin-left: auto; }
+.pp-search .ic { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--ink-3); pointer-events: none; }
+.pp-search .input { height: 44px; padding-left: 40px; border-radius: var(--r-pill); background: var(--surface-2); border-color: var(--line); }
+.pp-search .input:focus { background: var(--surface); }
+.pp-head .iconbtn { width: 40px; height: 40px; flex: none; color: var(--ink-2); }
 
-/* 결과 */
-.modal-body.pp-body { padding: var(--sp-4) var(--sp-5); scrollbar-gutter: stable; }
-.pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: var(--sp-3); }
-.card.pp-card { display: flex; flex-direction: column; min-width: 0; padding: 0; border-radius: var(--r-md); overflow: hidden; }
-/* 사진 높이는 숫자로 고정한다(격자 칸 안에서 height: 100% 는 사진 원래 크기로 늘어난다) */
-.pp-thumb { height: 148px; flex: none; display: grid; place-items: center; overflow: hidden; background: var(--surface); border-bottom: 1px solid var(--line); }
-.pp-thumb img { display: block; width: 100%; height: 148px; padding: 6px; object-fit: contain; }
-.pp-thumb.is-empty { align-content: center; gap: var(--sp-1); font-size: var(--fs-xs); font-weight: 600; color: var(--text-3); background: var(--surface-3); }
-.pp-thumb.is-empty .icon { width: 28px; height: 28px; stroke-width: 1.2; }
-.pp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: var(--sp-1); padding: var(--sp-3); }
-.pp-top { display: flex; align-items: center; gap: 6px; min-height: 20px; }
-.pp-brand { flex: 1; min-width: 0; font-size: var(--fs-xs); font-weight: 600; color: var(--text-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.pp-name, .pp-note { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere; }
-.pp-name { min-height: 2.8em; font-size: var(--fs-md); font-weight: 600; line-height: 1.4; }
-.pp-dims { font-size: var(--fs-sm); color: var(--text-2); font-variant-numeric: tabular-nums; }
-.pp-near { font-size: var(--fs-xs); font-weight: 600; color: var(--accent-700); }
-.pp-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; }
-.pp-price b { font-size: var(--fs-lg); font-weight: 800; letter-spacing: -0.02em; font-variant-numeric: tabular-nums; }
-.pp-price span, .pp-note { font-size: var(--fs-xs); color: var(--text-3); }
-.pp-actions { display: flex; gap: 6px; margin-top: auto; padding-top: var(--sp-2); }
+/* 분류 칩 · 개수 · 스위치 · 정렬 */
+.pp-controls { display: grid; gap: 6px; padding: 0 24px 8px; border-bottom: 1px solid var(--line); flex: none; }
+.pp-chips { display: flex; flex-wrap: wrap; gap: 5px; min-width: 0; }
+.pp-chip { height: 28px; padding: 0 10px; border-radius: var(--r-pill); border: 1px solid var(--line); background: var(--surface); font-size: var(--fs-13); font-weight: 600; color: var(--ink-2); white-space: nowrap; transition: background .15s, border-color .15s; }
+.pp-chip:hover { border-color: var(--accent); color: var(--accent-on-tint); }
+.pp-chip[aria-pressed="true"] { background: var(--accent-strong); border-color: var(--accent-strong); color: #fff; font-weight: 700; }
+.pp-row { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; }
+.pp-sp { flex: 1; }
+/* 개수 자리는 미리 잡아 둔다(불러온 뒤 줄이 밀리지 않게) */
+.pp-count { min-width: 64px; font-size: var(--fs-13); color: var(--ink-2); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.pp-count b { font-size: var(--fs-14); font-weight: 800; color: var(--ink); }
+.switch.pp-switch { height: 32px; padding: 0; background: transparent; }
+.select.pp-select { width: auto; flex: none; max-width: 100%; font-weight: 600; }
+
+/* 결과: 쇼핑앱의 상품 목록 */
+.pp-body { flex: 1; min-height: 0; overflow-y: auto; padding: 12px 24px 16px; background: var(--bg); scrollbar-gutter: stable; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent; }
+.pp-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(204px, 1fr)); gap: 12px; }
+.pp-card { display: flex; flex-direction: column; min-width: 0; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-l); overflow: hidden; transition: box-shadow .15s, transform .15s, border-color .15s; }
+.pp-card:hover { box-shadow: var(--sh-2); transform: translateY(-1px); border-color: var(--line-strong); }
+/* 사진은 칸에 절대 위치로 맞춘다(격자 칸 안에서 height: 100% 는 사진 원래 크기로 늘어난다) */
+.pp-thumb { position: relative; height: 96px; flex: none; display: grid; place-items: center; overflow: hidden; background: #fff; border-bottom: 1px solid var(--line); }
+.pp-thumb img { position: absolute; inset: 0; display: block; width: 100%; height: 100%; padding: 6px; object-fit: contain; }
+.pp-thumb.is-empty { align-content: center; gap: 4px; font-size: var(--fs-12); font-weight: 600; color: var(--ink-3); background: var(--surface-2); }
+.pp-thumb.is-empty .ic { width: 28px; height: 28px; stroke-width: 1.3; }
+.pp-thumb.is-empty .th { background: #fff; }
+.pp-info { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; padding: 8px 12px 12px; }
+.pp-top { display: flex; align-items: center; gap: 6px; min-height: 22px; }
+.pp-brand { flex: 1; min-width: 0; font-size: var(--fs-12); font-weight: 600; color: var(--ink-3); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.pp-name { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; line-clamp: 2; overflow: hidden; overflow-wrap: anywhere;
+  min-height: 2.7em; font-size: var(--fs-13); font-weight: 600; line-height: 1.35; color: var(--ink); }
+.pp-dims { font-size: var(--fs-12); color: var(--ink-2); font-variant-numeric: tabular-nums; }
+.pp-near { font-size: var(--fs-12); font-weight: 700; color: var(--accent-on-tint); }
+.pp-price { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0 6px; margin-top: 2px; }
+.pp-price b { font-size: 17px; font-weight: 800; letter-spacing: -0.03em; font-variant-numeric: tabular-nums; }
+.pp-price span, .pp-note { font-size: var(--fs-12); color: var(--ink-3); }
+.pp-note { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.pp-actions { display: flex; gap: 6px; margin-top: auto; padding-top: 8px; }
 .pp-actions > button { flex: 1; min-width: 0; }
-.pp-more { display: grid; justify-items: center; gap: 6px; padding: var(--sp-4) 0 var(--sp-1); font-size: var(--fs-sm); }
+.pp-actions .btn.primary { box-shadow: none; }
+.pp-actions a.btn { padding: 0 9px; gap: 4px; font-size: var(--fs-12); color: var(--ink-2); }
+.pp-more { display: grid; justify-items: center; gap: 6px; padding: 16px 0 4px; }
+
+/* 창이 높으면(1707×950 등) 사진을 키운다. 창 크기 기준이라 .app 의 zoom 안에서도 맞다 */
+@container (min-height: 780px) { .pp-thumb, .pp-skel.pp-skel-thumb { height: 122px; } .pp-body { padding-top: 14px; } }
 
 /* 불러오는 중, 오류, 결과 없음 */
-.pp-skel-thumb { height: 148px; border-radius: 0; }
-.pp-state { min-height: 100%; }
-.pp-state .pp-row { justify-content: center; margin-top: var(--sp-2); }
+.pp-skel { display: block; height: 12px; border-radius: 6px; margin: 3px 0; background: linear-gradient(90deg, #EEF1F5 25%, #F7F9FB 40%, #EEF1F5 55%); background-size: 300% 100%; animation: shimmer 1.4s linear infinite; }
+.pp-skel.pp-skel-thumb { height: 96px; margin: 0; border-radius: 0; }
+.pp-state { min-height: 100%; align-content: center; }
+.pp-state .pp-row { justify-content: center; margin-top: 8px; }
+.pp-state .btn.primary { margin-top: 8px; }
 
-.modal-foot.pp-foot { justify-content: flex-start; font-size: var(--fs-xs); line-height: 1.5; color: var(--text-3); }
+.pp-foot { display: flex; align-items: flex-start; gap: 8px; padding: 7px 24px 9px; border-top: 1px solid var(--line); font-size: var(--fs-12); line-height: 1.5; color: var(--ink-3); flex: none; }
+.pp-foot .ic { margin-top: 2px; }
+
+@media (max-width: 760px) {
+  .pp-backdrop { padding: 0; }
+  .pp-modal { max-height: none; border-radius: 0; }
+  .pp-head { flex-wrap: wrap; padding: 12px 12px 10px 16px; gap: 8px 12px; }
+  .pp-title { flex: 1; }
+  .pp-search { order: 3; flex-basis: 100%; max-width: none; }
+  .pp-controls { padding: 0 16px 10px; }
+  .pp-chips { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px; }
+  .pp-body { padding: 12px 16px 16px; }
+  .pp-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 8px; }
+  .pp-actions a.btn .ic { display: none; }
+  .pp-foot { padding: 8px 16px 10px; }
+}
+
+/* 카드의 주의 표시는 상자 없이 작은 글로 낮춘다(첫 화면이 어수선하지 않게) */
+.pp-card .pp-top .badge.check { height: auto; padding: 0; background: transparent; color: var(--ink-3); font-weight: 600; }
+.pp-card .pp-top .badge.check .ic { color: var(--warn); }

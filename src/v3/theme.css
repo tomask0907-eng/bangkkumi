@@ -69,6 +69,7 @@ a { color: var(--accent-strong); }
 .btn.sm { height: 32px; padding: 0 12px; font-size: var(--fs-13); border-radius: 10px; }
 .btn.lg { height: 52px; padding: 0 26px; font-size: var(--fs-16); border-radius: 14px; font-weight: 700; }
 .btn.block { width: 100%; }
+.btn:disabled, .iconbtn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; transform: none; }
 .iconbtn { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: 10px; border: 0; background: transparent; color: var(--ink-3); }
 .iconbtn:hover { background: var(--bg); color: var(--ink); }
 
@@ -144,9 +145,6 @@ a { color: var(--accent-strong); }
 .rail .dot { position: absolute; top: 2px; right: 3px; min-width: 10px; height: 18px; padding: 0 4px; border-radius: 99px; background: var(--warn); color: #2B1D00; font-size: var(--fs-12); font-weight: 800; line-height: 18px; border: 2px solid #fff; box-sizing: content-box; }
 .rail .dot.bad { background: var(--err); color: #fff; }
 .rail .sp { flex: 1; }
-/* 목업 전용: 상태 바꿔 보기. 구현할 때는 빼요. */
-.mock { display: grid; gap: 3px; justify-items: center; font-size: var(--fs-12); color: var(--ink-3); font-weight: 600; }
-.mock select { width: 66px; height: 26px; border-radius: 8px; border: 1px dashed #AEB8C6; background: var(--surface-2); font-size: var(--fs-12); color: var(--ink-2); padding: 0 2px; }
 
 /* 카테고리 패널 */
 .panel { background: var(--surface); border-right: 1px solid var(--line); min-height: 0; display: none; flex-direction: column; }
@@ -363,7 +361,7 @@ button.chip:hover { border-color: var(--accent); }
 .plan .fx { cursor: grab; }
 .plan .is-selected { --st: var(--accent); --sw: 2px; }
 .plan .is-warn { --st: #E08A00; --sw: 2px; }
-.plan .is-error, .app[data-state="error"] .plan .bed { --st: var(--err); --sw: 2px; }
+.plan .is-error { --st: var(--err); --sw: 2px; }
 .plan .handle { fill: #fff; stroke: var(--accent); stroke-width: 1.5px; }
 .plan .guide { stroke: var(--accent); stroke-width: 1px; fill: none; }
 .plan .gtag { font-size: calc(var(--k) * 12px); font-weight: 700; fill: #fff; font-variant-numeric: tabular-nums; }
@@ -391,50 +389,11 @@ kbd { font-family: var(--font); font-size: var(--fs-12); font-weight: 700; paddi
 .empty-card p { font-size: var(--fs-13); color: var(--ink-2); }
 .empty-card .rowx { margin-top: 12px; }
 
-/* ══ 시작 화면 ═══════════════════════════ */
-.landing { height: 100vh; min-height: 600px; background: #fff; display: flex; flex-direction: column; overflow: hidden; --px: max(40px, calc((100vw - 1240px) / 2)); }
-.lnav { display: flex; align-items: center; gap: 28px; height: 64px; flex: none; padding: 0 var(--px); }
-.lnav .links { display: flex; gap: 24px; margin-left: 20px; font-size: var(--fs-14); font-weight: 600; }
-.lnav .links a { color: var(--ink-2); text-decoration: none; }
-.lnav .links a:hover { color: var(--ink); }
-.lnav .sp { flex: 1; }
-.hero { flex: 1; display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.06fr); align-items: center; gap: 40px; padding: 0 var(--px); min-height: 0; }
-.hero .eyebrow { display: inline-flex; align-items: center; gap: 6px; height: 30px; padding: 0 12px; border-radius: 99px; background: var(--accent-tint); color: var(--accent-on-tint); font-size: var(--fs-13); font-weight: 700; }
-.hero h1 { font-size: var(--fs-56); line-height: 1.16; font-weight: 800; letter-spacing: -0.045em; margin: 16px 0 14px; }
-.hero h1 em { font-style: normal; color: var(--accent-strong); }
-.hero .pitch { font-size: 17px; line-height: 1.65; color: var(--ink-2); }
-.hero .cta { display: flex; gap: 10px; margin-top: 26px; }
-.hero .proof { display: flex; gap: 18px; margin-top: 18px; font-size: var(--fs-13); color: var(--ink-3); font-weight: 500; }
-.hero .proof span { display: inline-flex; align-items: center; gap: 5px; }
-.hero .proof .ic { width: 14px; height: 14px; color: var(--ok); stroke-width: 2.6; }
-/* 히어로 그림: 선명한 애저 판 위에 흰 방을 띄워요 */
-.hero-art { position: relative; align-self: stretch; margin: 6px 0 10px; border-radius: 36px; min-height: 0;
-  background: linear-gradient(rgba(255,255,255,.07) 1px, transparent 1px) 0 0 / 36px 36px, linear-gradient(90deg, rgba(255,255,255,.07) 1px, transparent 1px) 0 0 / 36px 36px,
-    radial-gradient(120% 100% at 25% 10%, #62A6E1 0%, #2F81CC 48%, #296BB0 100%); }
-.hero-art img { position: absolute; inset: 2% 5% 0; width: 90%; height: 98%; object-fit: contain; filter: drop-shadow(0 18px 24px rgba(17,39,71,.3)); }
-.fcard { position: absolute; padding: 10px 14px; display: flex; align-items: center; gap: 10px; border-radius: 16px; background: #fff; box-shadow: 0 12px 28px rgba(17,39,71,.24); font-size: var(--fs-12); color: var(--ink-3); font-weight: 600; white-space: nowrap; }
-.fcard strong { display: block; font-size: var(--fs-16); color: var(--ink); font-weight: 800; letter-spacing: -0.02em; line-height: 1.25; }
-.fcard .ring { width: 44px; height: 44px; } .fcard .ring b { font-size: 16px; }
-.fcard .th { width: 44px; height: 44px; }
-.feats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; padding: 14px var(--px) 28px; flex: none; }
-.feat { display: flex; gap: 14px; align-items: center; padding: 16px 18px; border-radius: 18px; background: #fff; border: 1px solid var(--line); box-shadow: var(--sh-1); }
-.feat .ico { width: 52px; height: 52px; border-radius: 16px; background: var(--accent-tint); display: grid; place-items: center; color: var(--accent-strong); flex: none; }
-.feat .ico .ic { width: 26px; height: 26px; }
-.feat:nth-child(2) .ico { background: var(--warm-tint); color: var(--warm-text); }
-.feat h3 { font-size: var(--fs-16); font-weight: 700; letter-spacing: -0.02em; }
-.feat p { font-size: var(--fs-13); color: var(--ink-2); margin-top: 2px; line-height: 1.5; }
-@media (max-height: 700px) {
-  .lnav { height: 56px; }
-  .hero h1 { font-size: 46px; margin: 12px 0 10px; } .hero .pitch { font-size: 15px; line-height: 1.55; }
-  .hero .cta { margin-top: 18px; } .hero .proof { margin-top: 12px; }
-  .btn.lg { height: 46px; }
-  .feats { padding: 10px var(--px) 16px; } .feat { padding: 10px 14px; } .feat .ico { width: 44px; height: 44px; }
-}
+/* 시작 화면(.landing ~ .feat)의 규칙은 landing.css 에 있다 */
 
+/* 큰 화면(시연 노트북 1707px 포함)에서는 작업 화면을 1.15배로 키운다 */
 @media (min-width: 1700px) {
   .app { zoom: 1.15; height: calc(100vh / 1.15); }
-  .hero h1 { font-size: 72px; } .hero .pitch { font-size: 20px; }
-  .feats { padding-bottom: 48px; } .feat { padding: 22px 24px; }
 }
 
 /* 덧붙임: 평면도 보조 요소 */
@@ -446,3 +405,26 @@ kbd { font-family: var(--font); font-size: var(--fs-12); font-weight: 700; paddi
 .plan .hd-i { stroke: #fff; stroke-width: 6px; stroke-linecap: square; fill: none; }
 .item .sub a { font-weight: 600; }
 .chip.style { justify-content: space-between; }
+/* 스타일 이름이 길면 말줄임하고 색 동그라미 5개는 지킨다 */
+.chip.style > span:first-child { min-width: 0; flex: 1; }
+.chip.style strong { overflow: hidden; text-overflow: ellipsis; }
+.chip.style .sw5 { flex: none; }
+
+/* ── 옛 이름 → 새 값 ──────────────────────────
+   아직 옛 변수 이름을 쓰는 화면(DWG 모달, 상품 고르기 등)이 새 색으로 보이게 이어 준다.
+   새로 쓰는 규칙에서는 위의 새 이름만 쓴다. */
+:root {
+  --text: var(--ink); --text-2: var(--ink-2); --text-3: var(--ink-3); --text-on-accent: #fff;
+  --surface-3: #EEF1F5;
+  --accent-50: var(--accent-tint); --accent-soft: var(--accent-tint); --accent-300: var(--accent);
+  --accent-600: var(--accent-strong); --accent-700: var(--accent-on-tint); --accent-800: var(--accent-on-tint);
+  --error: var(--err); --error-text: var(--err-text); --error-bg: var(--err-tint);
+  --plan-ink: var(--plan-line);
+  --sp-1: 4px; --sp-2: 8px; --sp-3: 12px; --sp-4: 16px; --sp-5: 20px; --sp-6: 24px;
+  --fs-xs: 12px; --fs-sm: 12px; --fs-md: 13px; --fs-lg: 15px; --fs-display: 38px;
+  --r-sm: 8px; --r-md: 12px; --r-lg: 16px;
+  --shadow-md: var(--sh-2); --shadow-lg: var(--sh-3);
+  --ctl-h-sm: 28px;
+  --z-sticky: 10; --z-float: 20; --z-tooltip: 40; --z-modal: 100;
+  --ease: cubic-bezier(0.2, 0.8, 0.2, 1); --t-base: 200ms;
+}

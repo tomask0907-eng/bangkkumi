@@ -285,13 +285,15 @@ test('가격·글 도구', () => {
   assert.equal(cleanName(`  a${CTRL}<b>\n c  `, 5), 'a b c');
 });
 
-test('EXAMPLE: 3m × 4m, 100만원, 가구 4개가 모두 카탈로그로 읽힌다', () => {
-  assert.deepEqual([EXAMPLE.room.width, EXAMPLE.room.depth, EXAMPLE.budget, EXAMPLE.styleKey], [300, 400, 1000000, 'minimal']);
-  assert.deepEqual(EXAMPLE.room.doors, [{ wall: 'bottom', offset: 20, size: 90, kind: 'entry' }]);
-  assert.deepEqual(EXAMPLE.room.windows[0], { wall: 'top', offset: 50, size: 100, sill: 90, height: 120 });
-  assert.ok(STYLE_PRESETS[EXAMPLE.styleKey]);
+test('EXAMPLE: 4m × 3m, 북유럽, 120만원, 가구 5개가 모두 카탈로그로 읽히고 소품까지 예산 안이다', () => {
+  assert.deepEqual([EXAMPLE.room.width, EXAMPLE.room.depth, EXAMPLE.budget, EXAMPLE.styleKey], [400, 300, 1200000, 'nordic']);
+  assert.deepEqual(EXAMPLE.room.doors, [{ wall: 'bottom', offset: 40, size: 90, kind: 'entry' }]);
+  assert.deepEqual(EXAMPLE.room.windows[0], { wall: 'top', offset: 110, size: 140, sill: 90, height: 120 });
+  const st = STYLE_PRESETS[EXAMPLE.styleKey];
+  assert.ok(st);
   const r = parse(EXAMPLE.furnitureText);
-  assert.deepEqual([r.specs.map((s) => s.key), r.unknown], [['bed_ss', 'desk_120', 'wardrobe_100', 'bookshelf'], []]);
-  const total = r.specs.reduce((sum, s) => sum + priceOf(s, STYLE_PRESETS.minimal), 0);
+  assert.equal(r.specs.length, 5);
+  assert.deepEqual([r.specs.slice(0, 4).map((s) => s.key), r.unknown], [['bed_ss', 'desk_120', 'wardrobe_100', 'bookshelf'], []]);
+  const total = r.specs.reduce((sum, s) => sum + priceOf(s, st), 0) + st.props.reduce((sum, p) => sum + p.price, 0);
   assert.ok(total <= EXAMPLE.budget, `합계 ${total}`);
 });

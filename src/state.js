@@ -32,12 +32,16 @@ export const blank = () => ({
 const MAX_SPECS = 15;
 // 실제 상품에서 고른 가구: _id가 'product|<상품 번호>'
 export const isPicked = (sp) => typeof sp?._id === 'string' && sp._id.startsWith('product|');
+// 사진이나 링크로 추가한 가구: _id가 'ref|<uid>'
+export const isRef = (sp) => typeof sp?._id === 'string' && sp._id.startsWith('ref|');
+// 글에서 오지 않은 가구(실제 상품, 사진·링크로 추가): 글을 다시 해석해도 남고 글 칸에는 들어가지 않는다
+export const isKept = (sp) => isPicked(sp) || isRef(sp);
 export function mergeParsed(text, prev) {
   const { specs, unknown, truncated } = parseFurnitureText(text);
   // 실제 상품에서 고른 가구는 글에 없어도 남긴다. 합쳐서 15개를 넘으면 글에서 온 가구를 뒤에서부터 줄인다
-  const picked = prev.filter(isPicked).slice(0, MAX_SPECS);
+  const picked = prev.filter(isKept).slice(0, MAX_SPECS);
   const room = MAX_SPECS - picked.length;
-  const pool = prev.filter((p) => !isPicked(p));
+  const pool = prev.filter((p) => !isKept(p));
   const take = (id) => {
     const i = pool.findIndex((p) => p._id === id);
     return i < 0 ? null : pool.splice(i, 1)[0];
@@ -57,7 +61,7 @@ export function mergeParsed(text, prev) {
     ],
   };
 }
-export const textOf = (specs) => specs.filter((s) => !isPicked(s)).map((s) => s._txt || s.name).join(', '); // 실제 상품은 글에 넣지 않는다
+export const textOf = (specs) => specs.filter((s) => !isKept(s)).map((s) => s._txt || s.name).join(', '); // 실제 상품은 글에 넣지 않는다
 // 평면도에 놓인 가구의 치수를 바꿀 때 등 쪽 변을 제자리에 둔다(아래·오른쪽 벽에 붙은 가구가 얕아져도 벽에서 떨어지지 않게).
 // 등은 rot 0 위, 90 오른쪽, 180 아래, 270 왼쪽. 위·왼쪽은 왼쪽 위 좌표가 그대로라 손댈 것이 없다
 export const keepBack = (old, next) => (old.rot === 180 ? { ...next, y: old.y + old.d - next.d } : old.rot === 90 ? { ...next, x: old.x + old.d - next.d } : next);
@@ -96,13 +100,25 @@ export function shortWon(n) {
 
 /* ───────── 저장·복원 ───────── */
 // 저장된 값은 믿지 않는다: 하나씩 검증하고, 틀리면 기본값을 쓴다
+const TINT = /^#[0-9a-f]{6}$/i;
+// 사진·링크로 추가한 가구의 출처: 종류는 두 가지뿐이고 주소는 https 만 남긴다
+function refIn(o) {
+  if (!o || (o.kind !== 'photo' && o.kind !== 'link')) return null;
+  const url = httpsUrl(o.url);
+  return url ? { kind: o.kind, url } : { kind: o.kind };
+}
 const EXTRA = (o) => ({
   uid: cleanName(o.uid, 40) || newUid(),
   _id: typeof o._id === 'string' ? o._id.slice(0, 120) : '',
   _txt: cleanName(o._txt, 40) || cleanName(o.name),
   ...(o._wait === true && { _wait: true }),
   ...(o.source === 'user' && { source: 'user' }), // 사용자가 치수를 고친 가구
+  ...(o.owned === true && { owned: true }), // 이미 갖고 있는 가구: 합계와 예산 계산에서 뺀다
+  ...(typeof o.tint === 'string' && TINT.test(o.tint) && { tint: o.tint.toLowerCase() }), // 사진·링크에서 읽은 대표 색
+  ...(refIn(o.ref) && { ref: refIn(o.ref) }),
 });
+// 합계에 넣을 금액: 이미 갖고 있는 가구(owned)는 0원으로 센다
+export const sumRows = (rows) => rows.reduce((a, r) => a + (r.owned ? 0 : r.price), 0);
 function specIn(o) {
   const sp = validateSpec(o);
   if (!sp) return null;

@@ -1,7 +1,10 @@
 // 실제 상품(다나와·이케아 조사 자료)에서 가구를 고르는 모달. 규약 10.2
-// <ProductPicker room initial={{ category, near: { w, d }, title }} onPick={(spec, product) => {}} onClose />
+// <ProductPicker room initial={{ category, near: { w, d }, title }} onPick={(spec, product) => {}} onClose palette? />
+// onPick 이 false 를 돌려주면(15개가 차서 담지 못함) 버튼을 "담았어요"로 바꾸지 않는다.
+// palette(선택): 사진이 없는 상품의 가구 그림에 입힐 스타일 5색. 없으면 바깥(.app)의 --c1~--c5 를 쓴다
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Icon from './Icons.jsx';
+import Ic from '../v3/Ic.jsx';
+import { FurnitureThumb } from '../v3/symbols.jsx';
 import { won } from '../catalog.js';
 import { loadProducts, searchProducts, productToSpec, PRODUCT_SOURCES, PRODUCT_CATEGORIES } from '../products.js';
 import './ProductPicker.css';
@@ -15,6 +18,9 @@ const FOCUSABLE = 'a[href], button:not(:disabled), input:not(:disabled), select:
 const https = (u) => (typeof u === 'string' && u.startsWith('https://') ? u : '');
 const round1 = (n) => Math.round(n * 10) / 10;
 const signed = (n) => (n > 0 ? `+${n}` : `${n}`);
+const count = (n) => n.toLocaleString('ko-KR');
+// 아이콘 묶음에 돋보기가 없어서 여기서 그린다
+const SearchIc = () => <svg className="ic" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><circle cx="11" cy="11" r="6.5" /><path d="M16 16l4.5 4.5" /></svg>;
 
 // "지금 가구보다 폭 +10cm"
 function nearText(p, near) {
@@ -24,27 +30,29 @@ function nearText(p, near) {
   return parts.length ? `지금 가구보다 ${parts.join(', ')}` : '지금 가구와 폭, 깊이가 같아요';
 }
 
-function Card({ p, near, catLabel, pickLabel, doneLabel, done, onPick }) {
+function Card({ p, near, catLabel, pickLabel, doneLabel, done, onPick, palette }) {
   const [broken, setBroken] = useState(false);
   const image = SHOW_IMAGES && !broken ? https(p.image) : '';
   const url = https(p.url);
   const source = PRODUCT_SOURCES[p.src];
+  // 사진이 없는 상품(이케아 자료)은 평면도와 같은 가구 그림을 보여 준다
+  const drawn = useMemo(() => (image ? null : productToSpec(p)), [image, p]);
   return (
-    <article className="card pp-card">
+    <article className="pp-card">
       {image ? (
         <div className="pp-thumb">
           <img src={image} alt="" loading="lazy" decoding="async" referrerPolicy="no-referrer" onError={() => setBroken(true)} />
         </div>
       ) : (
         <div className="pp-thumb is-empty" aria-hidden="true">
-          <Icon name="cube" />
+          {drawn ? <FurnitureThumb spec={drawn} palette={palette} size={64} /> : <Ic name="cube" className="l" />}
           <span>{catLabel || '가구'}</span>
         </div>
       )}
       <div className="pp-info">
         <div className="pp-top">
           <span className="pp-brand">{p.brand}</span>
-          {p.warn && <span className="badge badge-warn"><Icon name="alert" />{p.warn}</span>}
+          {p.warn && <span className="badge check"><Ic name="warn" />{p.warn}</span>}
         </div>
         <h3 className="pp-name" title={p.name}>{p.name}</h3>
         <p className="pp-dims">가로 {p.w} × 깊이 {p.d} × 높이 {p.h} cm</p>
@@ -55,12 +63,12 @@ function Card({ p, near, catLabel, pickLabel, doneLabel, done, onPick }) {
         </p>
         {p.note && <p className="pp-note" title={p.note}>{p.note}</p>}
         <div className="pp-actions">
-          <button type="button" className={`btn btn-sm ${done ? 'btn-soft' : 'btn-primary'}`} aria-label={`${p.name} ${done ? doneLabel : pickLabel}`} onClick={() => onPick(p)}>
-            {done ? <><Icon name="check" />{doneLabel}</> : pickLabel}
+          <button type="button" className={`btn sm ${done ? 'soft' : 'primary'}`} aria-label={`${p.name} ${done ? doneLabel : pickLabel}`} onClick={() => onPick(p)}>
+            {done ? <><Ic name="check" className="s" />{doneLabel}</> : pickLabel}
           </button>
           {url && (
-            <a className="btn btn-sm" href={url} target="_blank" rel="noopener noreferrer">
-              상품 페이지<Icon name="ext" /><span className="sr-only"> (새 창에서 열려요)</span>
+            <a className="btn sm" href={url} target="_blank" rel="noopener noreferrer" title="새 창에서 열려요">
+              상품 페이지<Ic name="link" className="s" /><span className="pp-sr"> (새 창에서 열려요)</span>
             </a>
           )}
         </div>
@@ -69,7 +77,7 @@ function Card({ p, near, catLabel, pickLabel, doneLabel, done, onPick }) {
   );
 }
 
-export default function ProductPicker({ room, initial, onPick, onClose }) {
+export default function ProductPicker({ room, initial, onPick, onClose, palette }) {
   const near = initial?.near && Number.isFinite(initial.near.w) && Number.isFinite(initial.near.d) ? initial.near : null;
   const [list, setList] = useState(null);
   const [error, setError] = useState('');
@@ -109,7 +117,7 @@ export default function ProductPicker({ room, initial, onPick, onClose }) {
       document.removeEventListener('keydown', onKey, true);
       document.body.style.overflow = overflow;
       clearTimeout(doneTimer.current);
-      before?.focus?.();
+      before?.focus?.({ preventScroll: true }); // 방금 담은 줄로 내려 둔 가구 목록이 다시 위로 올라가지 않게
     };
   }, []);
 
@@ -143,7 +151,7 @@ export default function ProductPicker({ room, initial, onPick, onClose }) {
   const pick = (p) => {
     const spec = productToSpec(p);
     if (!spec) return; // 형식이 틀린 상품(목록을 읽을 때 이미 걸러져서 실제로는 생기지 않는다)
-    onPick?.(spec, p);
+    if (onPick?.(spec, p) === false) return; // 15개가 차서 담지 못했으면 버튼을 바꾸지 않는다
     setDoneId(p.id);
     clearTimeout(doneTimer.current);
     doneTimer.current = setTimeout(() => setDoneId(''), 1500);
@@ -156,107 +164,112 @@ export default function ProductPicker({ room, initial, onPick, onClose }) {
   // 결과가 없을 때: "방에 들어가는 것만"을 끄면 나오는 상품이 있을 때만 [끄기] 단추를 보여 준다
   const unfit = result?.total === 0 && fit ? searchProducts(list, { q: dq, category: category || undefined, type: type || undefined, limit: 1 }).total : 0;
   const toSearch = () => searchRef.current?.focus(); // 누른 단추가 사라져도 초점이 창 밖으로 빠지지 않게
+  // 개수와 설명은 실제로 불러온 자료에서 만든다(공개 사이트에는 이케아 자료만 있다)
+  const nDanawa = useMemo(() => (list ? list.filter((p) => p.src === 'danawa').length : 0), [list]);
+  const nIkea = list ? list.length - nDanawa : 0;
+  const desc = !list ? (error ? '상품 목록을 불러오지 못했어요.' : '상품 목록을 불러오고 있어요…')
+    : `실제 상품 ${count(list.length)}개${nDanawa && nIkea ? ` (다나와 ${count(nDanawa)} · 이케아 ${count(nIkea)})` : nIkea ? ' (이케아)' : ' (다나와)'} · 고르면 실제 치수로 방에 놓여요`;
+  const priceNote = !list ? '가격은 조사한 날의 값이에요.'
+    : nDanawa && nIkea ? '가격은 2026년 11월 17일 다나와 최저가(배송비 제외)와 이케아 공식가예요.'
+      : nDanawa ? '가격은 2026년 11월 17일 다나와 최저가(배송비 제외)예요.' : '가격은 2026년 11월에 조사한 이케아 공식가예요.';
 
   return (
-    <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
-      <div className="modal pp-modal" role="dialog" aria-modal="true" aria-labelledby="pp-title" ref={dialogRef}>
-        <header className="modal-head pp-head">
-          <div className="grow">
-            <h2 className="modal-title" id="pp-title">{initial?.title || '실제 상품에서 고르기'}</h2>
-            <p className="pp-desc">다나와에서 조사한 실제 상품 1만여 개와 이케아 가구예요. 고르면 실제 치수로 방에 놓여요.</p>
+    <div className="pp-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose?.(); }}>
+      <div className="pp-modal" role="dialog" aria-modal="true" aria-labelledby="pp-title" ref={dialogRef}>
+        <header className="pp-head">
+          <div className="pp-title">
+            <h2 id="pp-title">{initial?.title || '실제 상품에서 고르기'}</h2>
+            <p className="pp-desc">{desc}</p>
           </div>
-          <button type="button" className="btn btn-ghost btn-icon" aria-label="상품 고르기 닫기" onClick={() => onClose?.()}><Icon name="x" /></button>
+          <label className="pp-search">
+            <span className="pp-sr">상품 검색</span>
+            <SearchIc />
+            <input ref={searchRef} type="search" className="input" placeholder="책상 1200, 이케아 공식, 원목 침대 SS" value={q} onChange={(e) => setQ(e.target.value)} />
+          </label>
+          <button type="button" className="iconbtn" aria-label="상품 고르기 닫기" onClick={() => onClose?.()}><Ic name="x" /></button>
         </header>
 
         <div className="pp-controls">
+          <div className="pp-chips" role="group" aria-label="분류">
+            <button type="button" className="pp-chip" aria-pressed={!category} onClick={() => pickCategory('')}>전체</button>
+            {PRODUCT_CATEGORIES.map((c) => (
+              <button type="button" key={c.key} className="pp-chip" aria-pressed={category === c.key} onClick={() => pickCategory(c.key)}>{c.label}</button>
+            ))}
+          </div>
           <div className="pp-row">
-            <label className="pp-search">
-              <span className="sr-only">상품 검색</span>
-              <Icon name="search" />
-              <input ref={searchRef} type="search" className="input" placeholder="책상 1200, 이케아, 원목 침대 SS" value={q} onChange={(e) => setQ(e.target.value)} />
-            </label>
+            <p className="pp-count" role="status">{result ? <><b>{count(result.total)}</b>개</> : null}</p>
+            {room?.width > 0 && room?.depth > 0 && (
+              <button type="button" className="switch pp-switch" role="switch" aria-checked={fitOn} title={`방 크기 ${room.width} × ${room.depth}cm`} onClick={() => { setFitOn(!fitOn); toTop(); }}>내 방에 들어가는 것만</button>
+            )}
+            <span className="pp-sp" />
             {category && types.length > 0 && (
-              <select className="select pp-select" aria-label="세부 분류" value={type} onChange={(e) => { setType(e.target.value); toTop(); }}>
+              <select className="select sm pp-select" aria-label="세부 분류" value={type} onChange={(e) => { setType(e.target.value); toTop(); }}>
                 <option value="">세부 분류 전체</option>
-                {types.map((t) => <option key={t.type} value={t.type}>{t.type} ({t.count.toLocaleString('ko-KR')})</option>)}
+                {types.map((t) => <option key={t.type} value={t.type}>{t.type} ({count(t.count)})</option>)}
               </select>
             )}
-            <select className="select pp-select" aria-label="정렬" value={sort} onChange={(e) => { setSort(e.target.value); toTop(); }}>
+            <select className="select sm pp-select" aria-label="정렬" value={sort} onChange={(e) => { setSort(e.target.value); toTop(); }}>
               {SORTS.map(([key, label]) => <option key={key} value={key}>{label}</option>)}
               {near && <option value="near">크기가 비슷한 순</option>}
             </select>
-            {room?.width > 0 && room?.depth > 0 && (
-              <label className="switch" title={`방 크기 ${room.width} × ${room.depth}cm`}>
-                <input type="checkbox" checked={fitOn} onChange={(e) => { setFitOn(e.target.checked); toTop(); }} />
-                <span className="switch-track" />내 방에 들어가는 것만
-              </label>
-            )}
-          </div>
-          <div className="pp-row">
-            <div className="pp-chips" role="group" aria-label="분류">
-              <button type="button" className="chip" aria-pressed={!category} onClick={() => pickCategory('')}>전체</button>
-              {PRODUCT_CATEGORIES.map((c) => (
-                <button type="button" key={c.key} className="chip" aria-pressed={category === c.key} onClick={() => pickCategory(c.key)}>{c.label}</button>
-              ))}
-            </div>
-            <p className="pp-count" role="status">{result ? <><b>{result.total.toLocaleString('ko-KR')}</b>개</> : null}</p>
           </div>
         </div>
 
-        <div className="modal-body pp-body" ref={bodyRef} aria-busy={!list && !error}>
+        <div className="pp-body" ref={bodyRef} aria-busy={!list && !error}>
           {error ? (
-            <div className="empty pp-state" role="alert">
-              <div className="empty-art"><Icon name="alert" /></div>
-              <p className="empty-title">{error}</p>
-              <p>인터넷 연결을 확인하고 다시 시도해 주세요.</p>
-              <button type="button" className="btn btn-primary" onClick={() => { setAttempt((n) => n + 1); toSearch(); }}>다시 시도</button>
+            <div className="empty-msg pp-state" role="alert">
+              <span className="ico"><Ic name="warn" className="l" /></span>
+              <b>{error}</b>
+              <span>인터넷 연결을 확인하고 다시 시도해 주세요.</span>
+              <button type="button" className="btn primary" onClick={() => { setAttempt((n) => n + 1); toSearch(); }}>다시 시도</button>
             </div>
           ) : !result ? (
             <div className="pp-grid" aria-label="상품을 불러오는 중이에요">
               {Array.from({ length: 8 }, (_, i) => (
-                <div className="card pp-card" key={i} aria-hidden="true">
-                  <span className="skeleton pp-skel-thumb" />
+                <div className="pp-card" key={i} aria-hidden="true">
+                  <span className="pp-skel pp-skel-thumb" />
                   <div className="pp-info">
-                    <span className="skeleton" style={{ width: '40%' }} />
-                    <span className="skeleton" />
-                    <span className="skeleton" style={{ width: '70%' }} />
-                    <span className="skeleton" style={{ width: '50%', height: 18 }} />
+                    <span className="pp-skel" style={{ width: '40%' }} />
+                    <span className="pp-skel" />
+                    <span className="pp-skel" style={{ width: '70%' }} />
+                    <span className="pp-skel" style={{ width: '50%', height: 18 }} />
                   </div>
                 </div>
               ))}
             </div>
           ) : result.total === 0 ? (
-            <div className="empty pp-state">
-              <div className="empty-art"><Icon name="search" /></div>
-              <p className="empty-title">맞는 상품이 없어요</p>
-              <p>검색어를 줄이거나 조건을 풀어 보세요.</p>
+            <div className="empty-msg pp-state">
+              <span className="ico"><SearchIc /></span>
+              <b>맞는 상품이 없어요</b>
+              <span>검색어를 줄이거나 조건을 풀어 보세요.</span>
               <div className="pp-row">
-                {q && <button type="button" className="btn" onClick={() => { setQ(''); toSearch(); }}>검색어 지우기</button>}
-                {unfit > 0 && <button type="button" className="btn" onClick={() => { setFitOn(false); toTop(); toSearch(); }}>"방에 들어가는 것만" 끄기</button>}
-                {type && <button type="button" className="btn" onClick={() => { setType(''); toTop(); toSearch(); }}>세부 분류 전체로 보기</button>}
-                {category && <button type="button" className="btn" onClick={() => { pickCategory(''); toSearch(); }}>전체 분류에서 찾기</button>}
+                {q && <button type="button" className="btn sm" onClick={() => { setQ(''); toSearch(); }}>검색어 지우기</button>}
+                {unfit > 0 && <button type="button" className="btn sm" onClick={() => { setFitOn(false); toTop(); toSearch(); }}>"방에 들어가는 것만" 끄기</button>}
+                {type && <button type="button" className="btn sm" onClick={() => { setType(''); toTop(); toSearch(); }}>세부 분류 전체로 보기</button>}
+                {category && <button type="button" className="btn sm" onClick={() => { pickCategory(''); toSearch(); }}>전체 분류에서 찾기</button>}
               </div>
             </div>
           ) : (
             <>
               <div className="pp-grid">
                 {result.items.map((p) => (
-                  <Card key={p.id} p={p} near={near} catLabel={catLabel(p.category)} pickLabel={pickLabel} doneLabel={doneLabel} done={doneId === p.id} onPick={pick} />
+                  <Card key={p.id} p={p} near={near} catLabel={catLabel(p.category)} pickLabel={pickLabel} doneLabel={doneLabel} done={doneId === p.id} onPick={pick} palette={palette} />
                 ))}
               </div>
               {result.items.length < result.total && (
                 <div className="pp-more">
-                  <button type="button" className="btn" onClick={() => setLimit((n) => n + PAGE)}>더 보기</button>
-                  <span className="muted">{result.total.toLocaleString('ko-KR')}개 가운데 {result.items.length.toLocaleString('ko-KR')}개를 보고 있어요</span>
+                  <button type="button" className="btn sm" onClick={() => setLimit((n) => n + PAGE)}>더 보기</button>
+                  <span className="hint">{count(result.total)}개 가운데 {count(result.items.length)}개를 보고 있어요</span>
                 </div>
               )}
             </>
           )}
         </div>
 
-        <footer className="modal-foot pp-foot">
-          <p>가격은 2026년 11월 17일 다나와 최저가(배송비 제외)와 이케아 공식가예요. 실제 가격과 다를 수 있어요. 치수도 살 때 상품 페이지에서 확인해 주세요.</p>
-          <span className="sr-only" role="status">{doneName ? `${doneName} ${doneLabel}` : ''}</span>
+        <footer className="pp-foot">
+          <Ic name="info" className="s" />
+          <p>{priceNote} 실제 가격과 다를 수 있어요. 치수도 살 때 상품 페이지에서 확인해 주세요.</p>
+          <span className="pp-sr" role="status">{doneName ? `${doneName} ${doneLabel}` : ''}</span>
         </footer>
       </div>
     </div>

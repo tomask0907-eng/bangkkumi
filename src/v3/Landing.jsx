@@ -81,7 +81,7 @@ export default function Landing({ onStart, onExample }) {
         </article>
         <article className="feat">
           <span className="ico"><Ic><circle cx="12" cy="12" r="8.5" /><path d="M7.5 9l2 6.5L12 9l2.5 6.5 2-6.5M7 12h10" /></Ic></span>
-          <div><h2>실제 상품 1만여 개에서 고르기</h2><p>다나와에서 조사한 가구를 골라 실제 치수로 놓고, 예상 가격과 웹 검색 시세로 예산을 맞춰요.</p></div>
+          <div><h2>실제 상품에서 고르기</h2><p>실제로 파는 가구를 골라 실제 치수로 놓고, 가격을 더해 예산에 맞는지 바로 보여 드려요.</p></div>
         </article>
         <article className="feat">
           <span className="ico"><Ic><path d="M12 3.5l7.5 4.2v8.6L12 20.5l-7.5-4.2V7.7z" /><path d="M4.5 7.7L12 12l7.5-4.3M12 12v8.5" /></Ic></span>

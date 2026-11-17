@@ -1,7 +1,10 @@
 // 숫자 입력칸 두 가지: 범위가 있는 숫자(NumInput)와 원 단위 가격(PriceInput)
+// 모양(v3): NumInput 은 <input class="input"> 하나(className 으로 바꿀 수 있다. 단위는 부르는 쪽이 <span class="unit">…<i>cm</i></span> 로 감싼다).
+// PriceInput 은 <span class="price-edit [is-user] [sm]"><span class="unit"><input class="input [sm]"><i>원</i></span>[<button class="iconbtn undo">]</span>.
+// .price-edit 의 규칙은 src/v3/panels-furniture.css 에 있다(어디서 쓰여도 같은 모양).
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { PRICE_MAX } from '../state.js';
-import Icon from './Icons.jsx';
+import Ic from '../v3/Ic.jsx';
 
 // 치는 동안에는 글 그대로 두고, 범위 안의 숫자일 때만 바로 반영한다.
 // 칸을 떠날 때 범위 밖 숫자는 가까운 값으로 맞추고, 빈 칸은 원래 값으로 되돌린다.
@@ -46,10 +49,10 @@ export function PriceInput({ value, isUser = false, onCommit, onReset, label, sm
   const digitsOf = (s) => s.replace(/\D/g, '');
   const over = draft != null && Number(digitsOf(draft)) > PRICE_MAX;
   return (
-    <span className={`price-edit${isUser ? ' is-user' : ''}`}>
-      <span className="input-group">
+    <span className={`price-edit${isUser ? ' is-user' : ''}${small ? ' sm' : ''}`}>
+      <span className="unit">
         <input
-          ref={ref} className={`input${small ? ' input-sm' : ''}`} type="text" inputMode="numeric" autoComplete="off" aria-label={label}
+          ref={ref} className={`input${small ? ' sm' : ''}`} type="text" inputMode="numeric" autoComplete="off" aria-label={label}
           value={draft ?? fmt(value)} aria-invalid={over ? 'true' : undefined} title={over ? '5천만원까지만 적을 수 있어요' : undefined}
           onFocus={(e) => {
             dirty.current = false;
@@ -87,11 +90,11 @@ export function PriceInput({ value, isUser = false, onCommit, onReset, label, sm
             else onCommit(Math.min(PRICE_MAX, Number(digits)));
           }}
         />
-        <span className="input-unit">원</span>
+        <i>원</i>
       </span>
       {onReset && isUser && (
-        <button type="button" className="btn btn-ghost btn-icon btn-sm tooltip tip-end" data-tip="자동 가격으로" aria-label={`${label} 자동 가격으로 되돌리기`} onClick={onReset}>
-          <Icon name="undo" />
+        <button type="button" className="iconbtn undo" title="자동 가격으로 되돌리기" aria-label={`${label} 자동 가격으로 되돌리기`} onClick={onReset}>
+          <Ic name="undo" className="s" />
         </button>
       )}
     </span>

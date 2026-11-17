@@ -1,7 +1,7 @@
 // 화면 상태 도구 시험: 가구 글 해석 합치기, 가격 우선순위, 깨진 저장값 복원
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { mergeParsed, textOf, keepBack, resolvePrice, priceKey, productTitle, shortWon, load, save, blank, adviceIn, webIn } from './state.js';
+import { mergeParsed, textOf, isRef, isKept, sumRows, keepBack, resolvePrice, priceKey, productTitle, shortWon, load, save, blank, adviceIn, webIn } from './state.js';
 import { productToSpec } from './products.js';
 import { CATALOG, parseFurnitureText } from './catalog.js';
 
@@ -219,6 +219,56 @@ test('load: 담은 상품은 productIn으로 다시 검증해 되살리고, 나�
     assert.equal(s.text, textOf(s.specs));
     assert.equal(s.text, s.parsedText);
     assert.equal(mergeParsed(s.text, s.specs).specs.length, 5);
+  } finally {
+    delete globalThis.localStorage;
+  }
+});
+
+/* ───────── 이미 있는 가구(owned) · 사진과 링크로 추가한 가구(ref, tint) ───────── */
+test('sumRows: 이미 있는 가구(owned)는 합계에서 빠진다', () => {
+  assert.equal(sumRows([{ price: 100 }, { price: 250, owned: true }, { price: 30, owned: false }]), 130);
+  assert.equal(sumRows([]), 0);
+});
+
+test('mergeParsed, textOf: 사진·링크로 추가한 가구는 글과 상관없이 남고 글에는 들어가지 않는다', () => {
+  const base = mergeParsed('침대, 책상', []).specs;
+  const ref = { ...base[1], uid: 'r1', _id: 'ref|r1', _txt: '원목 책상', name: '원목 책상', source: 'ai', tint: '#aa8855', ref: { kind: 'photo' } };
+  const all = [...base, ref];
+  assert.equal(isRef(ref), true);
+  assert.equal(isKept(ref), true);
+  assert.equal(isKept(base[0]), false);
+  assert.equal(textOf(all), textOf(base));
+  const again = mergeParsed('침대', all).specs;
+  assert.deepEqual(again.map((s) => s.uid), [base[0].uid, 'r1']);
+  assert.equal(mergeParsed('', all).specs.length, 1); // 글을 다 지워도 남는다
+});
+
+test('load: owned, tint, ref 는 검증해서 복원한다 (tint 는 #rrggbb, ref.url 은 https 만)', () => {
+  const mem = {};
+  globalThis.localStorage = { getItem: (k) => mem[k] ?? null, setItem: (k, v) => { mem[k] = String(v); }, removeItem: (k) => { delete mem[k]; } };
+  try {
+    const [bed, desk] = mergeParsed('침대, 책상', []).specs;
+    const mk = (uid, extra) => ({ ...desk, uid, _id: `ref|${uid}`, ...extra });
+    save({
+      ...blank(),
+      specs: [
+        { ...bed, owned: true },
+        { ...desk, owned: 'yes' },
+        mk('r1', { tint: '#AA8855', ref: { kind: 'link', url: 'https://www.ikea.com/kr/ko/p/x-1/', junk: 1 } }),
+        mk('r2', { tint: 'red', ref: { kind: 'photo', url: 'javascript:alert(1)' } }),
+        mk('r3', { tint: '#12345', ref: { kind: 'video' } }),
+      ],
+      layout: { items: [{ ...bed, owned: true, x: 0, y: 0, rot: 0 }, { ...mk('r1', { tint: '#aa8855', ref: { kind: 'photo' } }), x: 150, y: 0, rot: 0 }], unplaced: [], variant: 0, sig: '' },
+    });
+    const s = load();
+    assert.deepEqual(s.specs.map((x) => x.owned === true), [true, false, false, false, false]);
+    assert.equal('owned' in s.specs[1], false);
+    assert.deepEqual([s.specs[2].tint, s.specs[2].ref], ['#aa8855', { kind: 'link', url: 'https://www.ikea.com/kr/ko/p/x-1/' }]);
+    assert.deepEqual(['tint' in s.specs[3], s.specs[3].ref], [false, { kind: 'photo' }]);
+    assert.deepEqual(['tint' in s.specs[4], 'ref' in s.specs[4]], [false, false]);
+    assert.deepEqual(s.specs.slice(2).map((x) => x._id), ['ref|r1', 'ref|r2', 'ref|r3']); // 글을 다시 해석해도 남는 가구로 복원된다
+    assert.deepEqual([s.layout.items[0].owned, s.layout.items[1].tint, s.layout.items[1].ref], [true, '#aa8855', { kind: 'photo' }]);
+    assert.equal(mergeParsed(s.text, s.specs).specs.filter(isRef).length, 3);
   } finally {
     delete globalThis.localStorage;
   }

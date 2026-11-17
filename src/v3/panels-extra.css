@@ -1,0 +1,11 @@
+/* 새 기능(렌더링 이미지 카드)의 규칙. theme.css 에 없는 것만 쓴다. 색은 모두 변수. */
+.render-card .render-shot { position: relative; aspect-ratio: 16 / 10; border-radius: var(--r-m); background: var(--bg); border: 1px solid var(--line); overflow: hidden; display: grid; place-items: center; }
+.render-card .render-shot img { display: block; width: 100%; height: 100%; object-fit: cover; }
+.render-card .render-empty { display: grid; justify-items: center; gap: 4px; padding: 12px; text-align: center; font-size: var(--fs-12); color: var(--ink-3); line-height: 1.5; }
+.render-card .render-empty b { font-size: var(--fs-13); color: var(--ink); }
+.render-card .render-empty .ico { width: 44px; height: 44px; border-radius: 14px; background: var(--accent-tint); color: var(--accent-strong); display: grid; place-items: center; margin-bottom: 4px; }
+.render-card .render-busy { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; gap: 8px; background: color-mix(in srgb, var(--surface) 82%, transparent); font-size: var(--fs-13); font-weight: 700; color: var(--accent-on-tint); }
+.render-card .render-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.render-card .render-actions .btn { padding: 0 8px; white-space: nowrap; }
+.render-card .render-actions .btn:disabled { opacity: .5; cursor: not-allowed; box-shadow: none; }
+.render-card .render-hint { margin-top: 8px; }

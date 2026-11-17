@@ -35,6 +35,30 @@ export function paletteVars(palette) {
   VARS.set(palette, out);
   return out;
 }
+// 사진·링크로 추가한 가구의 대표 색(spec.tint = '#rrggbb') → 그 가구 한 개에만 씌우는 CSS 변수. 스타일 색 대신 이 색으로 면을 칠한다.
+// 섞는 비율은 스타일 색과 같아서(외곽선과 이름표가 읽힌다) 3D(three/model.js 의 tintColors)와도 같은 색이 된다.
+// --pt 는 원래 흰색인 몸통(냉장고·세탁기·가전)에 쓴다. tint 가 없거나 '#rrggbb' 가 아니면 null.
+const TINT = /^#[0-9a-f]{6}$/i;
+const TINT_FACES = { pw: 0.66, pw2: 0.66, pb: 0.56, pb2: 0.26, pr: 0.58, pt: 0.66 };
+const TINTS = new Map();
+export function tintVars(tint) {
+  if (typeof tint !== 'string' || !TINT.test(tint)) return null;
+  const key = tint.toLowerCase();
+  if (TINTS.has(key)) return TINTS.get(key);
+  const out = { '--c2': key, '--c3': key };
+  for (const [k, t] of Object.entries(TINT_FACES)) {
+    const v = mix('#ffffff', key, t), dark = luma(v) < 0.55;
+    out[`--${k}`] = v;
+    out[`--on-${k}`] = dark ? '#fff' : 'var(--ink)'; // 바깥 스타일이 정한 글자색을 물려받지 않게 항상 다시 정한다
+    out[`--on2-${k}`] = dark ? 'rgba(255,255,255,.86)' : 'var(--ink-2)';
+  }
+  if (TINTS.size > 200) TINTS.clear();
+  TINTS.set(key, out);
+  return out;
+}
+// tint 가 있는 가구의 대표 면 색(작은 배치 그림용)
+const tintFace = (spec, kind) => (tintVars(spec?.tint) ? { fill: tintVars(spec.tint)[`--${faceOf(kind) === 'white' ? 'pt' : faceOf(kind)}`] } : null);
+const WHITE_BODY = { fill: 'var(--pt, #fff)' }; // 흰 몸통. tint 가 있는 가구만 그 색이 된다
 const fill = (v) => ({ fill: `var(--${v})` });
 // 글자 폭 어림(글자 크기의 배수): 한글 1, 빈칸 0.3, 그 밖 0.6
 const units = (s) => [...s].reduce((a, ch) => a + (ch === ' ' ? 0.3 : ch.charCodeAt(0) > 0x2e80 ? 1 : 0.6), 0);
@@ -310,7 +334,7 @@ function Mirror({ w, d }) {
 function Fridge({ w, d }) {
   return (
     <>
-      <rect className="o main" width={w} height={d} rx={2.5} fill="#fff" />
+      <rect className="o main" width={w} height={d} rx={2.5} style={WHITE_BODY} />
       <path className="d" d={frontBand(w, d, w >= 80 ? 2 : 1, 5)} />
       {w >= 30 && d >= 35 && <rect className="d" x={4} y={4} width={w - 8} height={d - 13} rx={2} />}
     </>
@@ -321,7 +345,7 @@ function Washer({ w, d }) {
   const ch = d * 0.16, r = Math.min(w, d - ch) * 0.36, cy = ch + (d - ch) / 2;
   return (
     <>
-      <rect className="o main" width={w} height={d} rx={3} fill="#fff" />
+      <rect className="o main" width={w} height={d} rx={3} style={WHITE_BODY} />
       <path className="d" d={`M0 ${ch}H${w}`} />
       <circle className="d" cx={w * 0.82} cy={ch / 2} r={Math.min(2.2, ch * 0.3)} />
       <circle className="t" cx={w / 2} cy={cy} r={r} fill="#fff" />
@@ -391,7 +415,7 @@ function Appliance({ w, d }) {
   const m = Math.min(w, d);
   return (
     <>
-      <rect className="o main" width={w} height={d} rx={Math.min(6, m * 0.18)} fill="#fff" />
+      <rect className="o main" width={w} height={d} rx={Math.min(6, m * 0.18)} style={WHITE_BODY} />
       <circle className="d" cx={w / 2} cy={d / 2} r={m * 0.32} />
       <circle className="d" cx={w / 2} cy={d / 2} r={m * 0.14} />
     </>
@@ -436,7 +460,7 @@ export function FurnitureSymbol({ spec, selected = false, level, id = 'bk', px }
   // 치수를 모르는 가구(source: 'default')는 점선 외곽선으로 "확인 필요"를 알린다
   const cls = `symbol symbol-${kind}${spec.source === 'default' ? ' is-guess' : ''}${selected ? ' is-selected' : ''}${level === 'error' ? ' is-error' : level === 'warn' ? ' is-warn' : ''}`;
   return (
-    <g className={cls} data-kind={kind}>
+    <g className={cls} data-kind={kind} style={tintVars(spec.tint) || undefined}>
       <Draw w={w} d={d} clear={+spec.clear || 0} spec={spec} id={id} px={px} />
     </g>
   );
@@ -472,7 +496,8 @@ export function FurnitureLabel({ spec, rot = 0, px = 0.63, text, slot }) {
   const name = String(text ?? spec.name ?? '');
   const fs = 13 * px, fs2 = 12 * px, pad = 5 * px;
   const face = faceOf(kind);
-  const style = { '--h': face === 'white' ? '#fff' : `var(--${face})`, '--lf': `var(--on-${face}, var(--ink))`, '--lf2': `var(--on2-${face}, var(--ink-2))` };
+  const fv = face === 'white' ? 'pt' : face; // 흰 몸통은 tint 가 있을 때만 색이 있다(--pt)
+  const style = { ...tintVars(spec.tint), '--h': face === 'white' ? 'var(--pt, #fff)' : `var(--${face})`, '--lf': `var(--on-${fv}, var(--ink))`, '--lf2': `var(--on2-${fv}, var(--ink-2))` };
   const at = (b) => `translate(${b.x + b.w / 2} ${b.y + b.h / 2}) rotate(${-rot})`;
   const screen = (b) => (rot % 180 === 0 ? [b.w, b.h] : [b.h, b.w]); // 화면에서 본 가로·세로
   const size = `${w}×${d}`, full = { x: 0, y: 0, w, h: d };
@@ -680,7 +705,7 @@ export function MiniPlan({ room, items, palette }) {
       <rect className="mp-room" width={W} height={D} rx={s} strokeWidth={1.6 * s} />
       {[...items].sort((a, b) => !!b.floor - !!a.floor).map((it, i) => {
         const [w, h] = it.rot % 180 === 0 ? [it.w, it.d] : [it.d, it.w];
-        return <rect key={it.uid ?? i} className={it.floor ? undefined : 'mp-f'} x={it.x} y={it.y} width={w} height={h} strokeWidth={0.7 * s} style={faceFill(symbolKind(it))} />;
+        return <rect key={it.uid ?? i} className={it.floor ? undefined : 'mp-f'} x={it.x} y={it.y} width={w} height={h} strokeWidth={0.7 * s} style={tintFace(it, symbolKind(it)) || faceFill(symbolKind(it))} />;
       })}
     </svg>
   );
@@ -728,7 +753,7 @@ export function FurnitureThumb({ spec, palette, size }) {
   const box = size ? { width: size, height: size, borderRadius: size / 4 } : null;
   const side = size ? Math.round((size * 40) / 48) : undefined;
   return (
-    <span className="th" style={{ ...box, ...paletteVars(palette) }} aria-hidden="true">
+    <span className="th" style={{ ...box, ...paletteVars(palette), ...tintVars(spec?.tint) }} aria-hidden="true">
       <svg viewBox="0 0 40 40" style={side ? { width: side, height: side } : undefined}>{THUMB[thumbKind(spec || {})] || THUMB.generic}</svg>
     </span>
   );
