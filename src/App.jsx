@@ -10,6 +10,7 @@ import { newUid } from './state.js';
 import { productCategoryOf } from './products.js';
 import { paletteVars } from './v3/symbols.jsx';
 import { blank, load, save, clearSaved, mergeParsed, textOf, isKept, keepBack, priceKey, propKey, resolvePrice, sumRows, postJson, roomOut, itemOut, adviceIn, webIn } from './state.js';
+import HomeLink, { RoomSwitch } from './HomeLink.jsx'; // 집 전체 꾸미기: 방 패널의 묶음과 위 막대의 방 바꾸기
 import Plan from './v3/Plan.jsx';
 import Landing from './v3/Landing.jsx';
 import Rail from './v3/Rail.jsx';
@@ -48,7 +49,7 @@ const inputSigOf = (room, specs) => JSON.stringify([room.width, room.depth, room
 export default function App() {
   const [s, setS] = useState(load);
   const set = useCallback((patch) => setS((prev) => ({ ...prev, ...(typeof patch === 'function' ? patch(prev) : patch) })), []);
-  const [landing, setLanding] = useState(() => !s.specs.length && !s.layout); // 시작 화면: 저장된 작업(가구나 배치)이 없을 때만 먼저 보여 준다
+  const [landing, setLanding] = useState(() => !s.specs.length && !s.layout && window.location.hash !== '#room'); // 시작 화면: 저장된 작업(가구나 배치)이 없을 때만 먼저 보여 준다
   const [cat, setCat] = useState(() => (s.layout ? 'layout' : 'room')); // 지금 열린 카테고리: room | style | furniture | layout | cost | report
   const [tab, setTab] = useState('2d');
   const [view3d, setView3d] = useState('bird'); // 3D에서 지금 보는 방향 (렌더링 저장이 같은 방향으로 그린다)
@@ -592,7 +593,7 @@ export default function App() {
   return (
     <div className="app" data-cat={cat} style={paletteVars(style.palette)}>
       <TopBar
-        title={!s.specs.length ? '새 프로젝트' : isExample ? '예시 원룸' : '내 방'}
+        title={<RoomSwitch state={s} fallback={!s.specs.length ? '새 프로젝트' : isExample ? '예시 원룸' : '내 방'} />}
         summary={s.specs.length ? `${m(room.width)} × ${m(room.depth)}m · ${style.name} · 가구 ${s.specs.length}개 · 예산 ${budgetMan.toLocaleString('ko-KR')}만원` : '방 크기와 가구를 알려 주세요'}
         onHome={() => { setView3d('bird'); setLanding(true); }} onExample={() => loadExample(false)} onRecommend={doRecommend}
         busy={busy} hasLayout={!!s.layout} stale={!!s.layout && !inSync} offline={offline}
@@ -626,6 +627,7 @@ export default function App() {
             </div>
             <p className="hint pc-only">{offline ? '평면도 그림 읽기는 PC에서 실행할 때만 돼요.' : '방 후보와 문·창문을 찾아 줘요. 크기는 어림값이라 확인해 주세요.'}</p>
           </div>
+          <HomeLink state={s} />
         </div>
         <div className="panel-f"><button className="btn ghost" type="button" onClick={resetAll}>처음부터</button>{next('style', '스타일')}</div>
       </section>

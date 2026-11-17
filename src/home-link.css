@@ -1,0 +1,11 @@
+/* 메인에 꽂는 조각(HomeLink.jsx)의 스타일: 위 막대의 방 바꾸기와 방 패널의 다른 방 버튼.
+   색은 v3/theme.css의 변수만 쓴다. 디자인 v3 규칙대로 애저는 누를 수 있는 것에만 쓴다. */
+.home-switch {
+  height: 32px; max-width: 240px; padding: 0 8px 0 12px;
+  border: 1px solid transparent; border-radius: 10px;
+  background: var(--accent-tint); color: var(--accent-on-tint);
+  font-weight: 700; letter-spacing: -0.02em; text-overflow: ellipsis; cursor: pointer;
+}
+.home-switch:hover { background: var(--accent-tint-2); }
+.home-switch option { background: var(--surface); color: var(--ink); font-weight: 500; }
+.home-others { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }

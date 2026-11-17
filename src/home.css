@@ -1,0 +1,45 @@
+/* 집 전체 꾸미기 화면(home.html). 색·모서리·그림자는 v3/theme.css의 변수와 .topbar .btn .card .badge .hint를 그대로 쓴다.
+   디자인 v3 규칙: 애저는 누를 수 있는 것과 고른 것에만, 검은 면은 쓰지 않는다, 가장 작은 글자는 12px. */
+.home { min-height: 100dvh; background: var(--bg); color: var(--ink); }
+.home-top { position: sticky; top: 0; height: 56px; z-index: var(--z-sticky); }
+.home-main { display: grid; gap: 16px; max-width: 1040px; margin: 0 auto; padding: 28px 20px 56px; }
+.home-h { font-size: var(--fs-28); font-weight: 800; letter-spacing: -0.03em; }
+.home-lead { margin-top: 6px; font-size: var(--fs-14); color: var(--ink-2); line-height: 1.6; }
+
+/* 집 전체 합계와 방별 막대 */
+.home-sum { display: grid; gap: 16px; padding: 20px; box-shadow: var(--sh-1); }
+.home-sum h2 { font-size: var(--fs-14); font-weight: 700; color: var(--ink-2); }
+.home-total { margin: 2px 0 4px; font-size: var(--fs-28); font-weight: 800; letter-spacing: -0.03em; }
+.home-bars { display: grid; gap: 10px; margin: 0; padding: 16px 0 0; border-top: 1px solid var(--line); list-style: none; }
+.home-bars li { display: grid; grid-template-columns: minmax(72px, 160px) 1fr minmax(96px, auto); align-items: center; gap: 12px; font-size: var(--fs-13); }
+.home-bars li > span:first-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-weight: 600; }
+.home-bars b { text-align: right; font-weight: 700; }
+.home-bar { height: 8px; border-radius: var(--r-pill); background: var(--surface-3); overflow: hidden; }
+.home-bar i { display: block; height: 100%; border-radius: inherit; background: var(--accent); }
+
+/* 방 카드 */
+.home-rooms { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 12px; margin: 0; padding: 0; list-style: none; }
+.home-rooms .card { display: grid; gap: 12px; margin-top: 0; }
+.home-room.is-on { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-tint-2); }
+.home-room-h { display: flex; align-items: center; gap: 12px; min-width: 0; }
+.home-room-h svg { width: 64px; height: 48px; flex: none; border-radius: var(--r-s); background: var(--surface-2); }
+.home-room-h rect { fill: var(--accent-tint); stroke: var(--plan-wall); stroke-width: 1.5; }
+.home-room-h > div { display: grid; gap: 2px; min-width: 0; flex: 1; }
+.home-room-h b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: var(--fs-16); font-weight: 700; letter-spacing: -0.02em; }
+.home-room-h span.num { font-size: var(--fs-13); color: var(--ink-2); }
+.home-cost { display: grid; gap: 2px; min-height: 44px; align-content: center; }
+.home-cost b { font-size: var(--fs-20); font-weight: 800; letter-spacing: -0.02em; }
+.home-rooms .rowx { justify-content: space-between; }
+
+/* 방이 하나도 없을 때 */
+.home-empty { display: grid; justify-items: center; gap: 8px; padding: 40px 24px; text-align: center; }
+.home-empty b { font-size: 18px; font-weight: 800; letter-spacing: -0.03em; }
+.home-empty p { max-width: 460px; font-size: var(--fs-13); color: var(--ink-2); line-height: 1.6; }
+.home-empty .rowx { margin-top: 12px; flex-wrap: wrap; justify-content: center; }
+
+@media (max-width: 640px) {
+  .home-top { height: auto; flex-wrap: wrap; padding: 10px 14px; }
+  .home-top .project span { display: none; }
+  .home-bars li { grid-template-columns: 1fr auto; }
+  .home-bar { display: none; }
+}

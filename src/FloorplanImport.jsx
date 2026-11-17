@@ -1,6 +1,7 @@
 // 주소나 평면도 그림에서 방을 불러오는 모달. DwgImport와 같은 방식으로 쓴다.
 // 주소 입력 → 평형 고르기 → AI가 평면도 읽기 → 방 고르기 → [이 방으로 설정]
 // 또는 평면도 그림 올리기(끌어다 놓기, 붙여넣기) → AI가 읽기 → 방 고르기
+// multi를 주면 방을 여러 개 체크해서 한꺼번에 넘긴다: onApply([{ label, room }, …])
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { defaultDoor, sizeText, ROOM_MIN, ROOM_MAX } from './dwg/geom.js';
 import './dwg/dwg.css';
@@ -49,7 +50,7 @@ const refit = (list, room, w, h) => list.map((o) => {
   return { ...o, offset: Math.round(o.offset * f) };
 });
 
-export default function FloorplanImport({ onApply, onClose }) {
+export default function FloorplanImport({ onApply, onClose, multi = false }) {
   const [lookup, setLookup] = useState(null); // null 확인 중 | true | false(주소로 찾기 꺼짐) | 'missing'(서버에 연결 안 됨)
   const [busy, setBusy] = useState(null); // null | 'search' | 'read'
   const [error, setError] = useState('');
@@ -57,9 +58,9 @@ export default function FloorplanImport({ onApply, onClose }) {
   const [area, setArea] = useState(''); // 올리는 그림의 전용면적(㎡, 선택)
   const [found, setFound] = useState(null); // { complex, others, types, source }
   const [plan, setPlan] = useState(null); // 서버가 준 plan + img(그림 주소) + title
-  const [sel, setSel] = useState(null); // 고른 방 번호
-  const [size, setSize] = useState({ w: 0, h: 0 }); // 고른 방의 크기(cm, 고칠 수 있다)
-  const [tall, setTall] = useState([]); // 고른 방의 창마다: 바닥까지 트여 있는지 (구획용 창호, 통창)
+  const [sel, setSel] = useState(null); // 고른 방 번호 (크기와 창을 고치는 방)
+  const [edits, setEdits] = useState({}); // 방마다 고친 값 { 방 번호: { w, h, tall } }. 다른 방을 보다 와도 남는다
+  const [picked, setPicked] = useState([]); // multi일 때 체크한 방 번호
   const [over, setOver] = useState(false);
 
   const dialogRef = useRef(null);
@@ -104,7 +105,7 @@ export default function FloorplanImport({ onApply, onClose }) {
     }
   }, []);
   const post = (body, ms, signal) => call({ method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }, ms, signal);
-  const show = (data, img, title) => { setPlan({ ...data, img, title }); setSel(null); };
+  const show = (data, img, title) => { setPlan({ ...data, img, title }); setSel(null); setEdits({}); setPicked([]); };
 
   const search = (e) => {
     e.preventDefault();
@@ -135,30 +136,39 @@ export default function FloorplanImport({ onApply, onClose }) {
     if (!dialogRef.current.contains(document.activeElement)) dialogRef.current.focus();
   }, [busy, found, plan]);
 
-  // ── 고른 방
+  // ── 고른 방. 크기(cm)와 창마다 바닥까지 트여 있는지(구획용 창호, 통창)는 방마다 따로 고친다
+  const nameOf = (i) => plan.rooms[i].label || `방 ${i + 1}`;
+  const editOf = (i) => edits[i] || { w: Math.round(plan.rooms[i].w), h: Math.round(plan.rooms[i].h), tall: plan.rooms[i].windows.map((w) => w.sill === 0) };
+  const okSize = (e) => [e.w, e.h].every((v) => v >= ROOM_MIN && v <= ROOM_MAX);
   const room = plan && sel != null ? plan.rooms[sel] : null;
-  const pick = (i) => {
-    if (i === sel) return; // 이미 고른 방을 다시 눌러도 고친 크기는 그대로 둔다
-    setSel(i);
-    setTall(plan.rooms[i].windows.map((w) => w.sill === 0));
-    setSize({ w: Math.round(plan.rooms[i].w), h: Math.round(plan.rooms[i].h) });
-  };
-  const sizeOk = !!room && [size.w, size.h].every((v) => v >= ROOM_MIN && v <= ROOM_MAX);
+  const size = room ? editOf(sel) : { w: 0, h: 0, tall: [] };
+  const { tall } = size;
+  const sizeOk = !!room && okSize(size);
+  const setEdit = (patch) => setEdits({ ...edits, [sel]: { ...size, ...patch } });
   const setSide = (key, value) => {
     const n = Number(value);
-    // 칸을 비울 수 있어야 새 숫자를 칠 수 있다 (비어 있는 동안에는 sizeOk가 false라 적용되지 않는다)
-    if (value === '' || (Number.isFinite(n) && n > 0)) setSize({ ...size, [key]: value === '' ? '' : Math.min(Math.round(n), 5000) });
+    // 칸을 비울 수 있어야 새 숫자를 칠 수 있다 (비어 있는 동안에는 크기가 맞지 않아 적용되지 않는다)
+    if (value === '' || (Number.isFinite(n) && n > 0)) setEdit({ [key]: value === '' ? '' : Math.min(Math.round(n), 5000) });
   };
-  const apply = () => {
-    if (!sizeOk) return;
-    const doors = refit(room.doors, room, size.w, size.h);
-    onApply?.({
-      width: size.w,
-      depth: size.h,
-      doors: doors.length ? doors : [defaultDoor(size.w)],
+  // 방 하나를 메인에 넣을 모양으로 만든다 (하나만 고를 때와 여러 개 고를 때가 같이 쓴다)
+  const built = (i) => {
+    const r = plan.rooms[i];
+    const e = editOf(i);
+    const doors = refit(r.doors, r, e.w, e.h);
+    return {
+      width: e.w,
+      depth: e.h,
+      doors: doors.length ? doors : [defaultDoor(e.w)],
       // 바닥까지 트인 창은 창대 0cm, 높이 210cm로 넣는다 (메인의 3D에서 그 벽이 트여 보이고, 가구가 그 앞을 막지 않는다)
-      windows: refit(room.windows, room, size.w, size.h).map((w, i) => ({ ...w, ...(tall[i] ? { sill: 0, height: 210 } : { sill: 90, height: 120 }) })),
-    });
+      windows: refit(r.windows, r, e.w, e.h).map((w, j) => ({ ...w, ...(e.tall[j] ? { sill: 0, height: 210 } : { sill: 90, height: 120 }) })),
+    };
+  };
+  const chosen = plan ? [...picked].sort((a, b) => a - b) : []; // 체크한 방을 평면도 순서대로
+  const canApply = multi ? chosen.length > 0 && chosen.every((i) => okSize(editOf(i))) : sizeOk;
+  const toggle = (i) => setPicked(picked.includes(i) ? picked.filter((j) => j !== i) : [...picked, i]);
+  const apply = () => {
+    if (!canApply) return;
+    onApply?.(multi ? chosen.map((i) => ({ label: nameOf(i), room: built(i) })) : built(sel));
     onClose?.(); // 적용하면 모달은 스스로 닫는다
   };
   const mark = (o) => { // 벽 위의 문·창문을 평면도 좌표의 선으로
@@ -276,11 +286,11 @@ export default function FloorplanImport({ onApply, onClose }) {
               >
                 <image href={plan.img} x="0" y="0" width={plan.bounds.w} height={plan.bounds.h} preserveAspectRatio="none" />
                 {plan.rooms.map((r, i) => (
-                  <g key={i} className={`dwg-cand${sel === i ? ' is-picked' : ''}`} onClick={() => pick(i)}>
+                  <g key={i} className={`dwg-cand${sel === i ? ' is-picked' : ''}${picked.includes(i) ? ' fp-picked' : ''}`} onClick={() => setSel(i)}>
                     <rect x={r.x} y={r.y} width={r.w} height={r.h} />
                     {/* 방 이름은 그림에 이미 적혀 있는 경우가 많아 겹친다. 크기만 가운데보다 조금 아래에 적는다(이름은 오른쪽 카드에 있다) */}
                     {sel !== i && (
-                      <text x={r.x + r.w / 2} y={r.y + r.h / 2 + font * 1.6} fontSize={font} textAnchor="middle">{Math.round(r.w)} × {Math.round(r.h)}</text>
+                      <text x={r.x + r.w / 2} y={r.y + r.h / 2 + font * 1.6} fontSize={font} textAnchor="middle">{picked.includes(i) && '✓ '}{editOf(i).w || '?'} × {editOf(i).h || '?'}</text>
                     )}
                   </g>
                 ))}
@@ -289,28 +299,38 @@ export default function FloorplanImport({ onApply, onClose }) {
                     <rect x={room.x} y={room.y} width={room.w} height={room.h} />
                     {room.doors.map((d, i) => <line key={`d${i}`} {...mark(d)} />)}
                     {room.windows.map((w, i) => <line key={`w${i}`} className={`fp-win${tall[i] ? ' fp-open' : ''}`} {...mark(w)} />)}
-                    <text x={room.x + room.w / 2} y={room.y + room.h / 2} fontSize={font * 1.1} textAnchor="middle">{room.label}</text>
+                    <text x={room.x + room.w / 2} y={room.y + room.h / 2} fontSize={font * 1.1} textAnchor="middle">{picked.includes(sel) && '✓ '}{room.label}</text>
                   </g>
                 )}
               </svg>
-              <p className="dwg-muted dwg-small">색칠된 방을 누르면 그 방이 골라져요. 주황색 선은 문, 하늘색 선은 창문, 굵은 파란색 선은 바닥까지 트인 창이에요.</p>
+              <p className="dwg-muted dwg-small">{multi ? '색칠된 방을 누르면 크기와 창을 고칠 수 있어요.' : '색칠된 방을 누르면 그 방이 골라져요.'} 주황색 선은 문, 하늘색 선은 창문, 굵은 파란색 선은 바닥까지 트인 창이에요.</p>
             </div>
 
             <aside className="dwg-side">
               <section>
                 <h3>1. 방 고르기</h3>
+                {multi && <p className="dwg-muted dwg-small">꾸밀 방을 모두 체크해 주세요. 체크한 방을 한꺼번에 가져와요.</p>}
                 {/* 새 디자인의 방 후보 목록(.dwg-rooms: 작은 방 그림 + 이름 + 크기). DwgImport와 같은 모양이다 */}
                 <div className="dwg-rooms" role="group" aria-label={`방 후보 ${plan.rooms.length}개`}>
                   {plan.rooms.map((r, i) => {
                     const gw = Math.max(r.w * mini, 6);
                     const gh = Math.max(r.h * mini, 6);
-                    return (
-                      <button key={i} type="button" className={`dwg-room${sel === i ? ' is-on' : ''}`} aria-pressed={sel === i} title={r.label || `방 ${i + 1}`} onClick={() => pick(i)}>
+                    const e = editOf(i); // 크기를 고쳤으면 고친 값으로 적는다
+                    const tile = (
+                      <button key={i} type="button" className={`dwg-room${sel === i ? ' is-on' : ''}`} aria-pressed={sel === i} title={r.label || `방 ${i + 1}`} onClick={() => setSel(i)}>
                         <svg viewBox="0 0 48 36" aria-hidden="true"><rect x={(48 - gw) / 2} y={(36 - gh) / 2} width={gw} height={gh} /></svg>
                         <b>{r.label || `방 ${i + 1}`}</b>
-                        <span>{(r.w / 100).toFixed(1)}×{(r.h / 100).toFixed(1)}m</span>
+                        <span>{(e.w / 100).toFixed(1)}×{(e.h / 100).toFixed(1)}m</span>
+                        {picked.includes(i) && !okSize(e) && <span className="fp-fix">크기를 고쳐 주세요</span>}
                       </button>
                     );
+                    // 체크 칸은 버튼 안에 넣을 수 없어서, 카드를 감싼 틀의 모서리에 둔다
+                    return multi ? (
+                      <div key={i} className="fp-tile">
+                        <input type="checkbox" checked={picked.includes(i)} onChange={() => toggle(i)} aria-label={`${nameOf(i)} 고르기`} />
+                        {tile}
+                      </div>
+                    ) : tile;
                   })}
                 </div>
                 <p className="dwg-muted dwg-small">{plan.notice}</p>
@@ -336,19 +356,19 @@ export default function FloorplanImport({ onApply, onClose }) {
                     </p>
                     {room.windows.map((w, i) => (
                       <label key={i} className="fp-check">
-                        <input type="checkbox" checked={!!tall[i]} onChange={(e) => setTall(room.windows.map((_, j) => (j === i ? e.target.checked : !!tall[j])))} />
+                        <input type="checkbox" checked={!!tall[i]} onChange={(e) => setEdit({ tall: room.windows.map((_, j) => (j === i ? e.target.checked : !!tall[j])) })} />
                         {WALL_NAME[w.wall]} 벽 창(폭 {w.size}cm)이 바닥까지 트여 있어요
                       </label>
                     ))}
                   </>
                 ) : (
-                  <p className="dwg-size" aria-live="polite">아직 고른 방이 없어요.</p>
+                  <p className="dwg-size" aria-live="polite">{multi ? '방을 누르면 크기와 창을 고칠 수 있어요.' : '아직 고른 방이 없어요.'}</p>
                 )}
               </section>
 
               <div className="dwg-actions">
                 <button type="button" className="dwg-btn" onClick={back}>{found ? '다른 평형 고르기' : '다른 그림 올리기'}</button>
-                <button type="button" className="dwg-btn dwg-primary" onClick={apply} disabled={!sizeOk}>이 방으로 설정</button>
+                <button type="button" className="dwg-btn dwg-primary" onClick={apply} disabled={!canApply}>{multi ? `고른 방 ${chosen.length}개 가져오기` : '이 방으로 설정'}</button>
               </div>
             </aside>
           </div>

@@ -34,3 +34,10 @@
 .dwg-sel .fp-open { stroke: #1456b8; stroke-width: 10; } /* 바닥까지 트인 창(구획용 창호, 통창) */
 .fp-check { display: flex; align-items: center; gap: 8px; font-size: 13px; cursor: pointer; }
 .fp-check input { width: 16px; height: 16px; flex: none; }
+
+/* 여러 방 고르기(multi): 방 카드 모서리에 체크 칸, 체크한 방은 카드와 평면도에서 더 진하게 */
+.fp-tile { position: relative; display: grid; min-width: 0; }
+.fp-tile > input { position: absolute; top: 6px; left: 6px; width: 16px; height: 16px; margin: 0; accent-color: var(--dwg-accent); cursor: pointer; }
+.dwg-rooms .fp-tile > input:checked + .dwg-room { border-color: var(--dwg-accent-line); background: var(--dwg-accent-soft); }
+.dwg-side .dwg-rooms .fp-fix { white-space: normal; color: var(--dwg-danger); font-weight: 700; }
+.dwg-cand.fp-picked:not(.is-picked) rect { fill-opacity: 0.34; stroke: var(--dwg-accent-strong); stroke-width: 2.5; stroke-dasharray: none; }

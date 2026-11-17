@@ -342,3 +342,11 @@ productCategoryOf(spec) → category | null                 // 앱 가구(spec.k
 - 요청: `GET` → `{ lookup }`. `POST` 그림 바이트(`Content-Type: image/jpeg|png`, 5MB까지, 헤더 `X-Area`에 전용면적 ㎡) → plan. 오류는 `{ error }`(한국어)와 400 · 403 · 404 · 413 · 422 · 502.
 - **주소로 찾기(직방 조회)는 기본으로 꺼져 있다.** 직방의 공개되지 않은 주소를 부르는 기능이라 9 · 10절의 "자동 수집을 하지 않는다"와 맞지 않는다. `FLOORPLAN_LOOKUP=on`으로 서버를 켰을 때만 동작하고, 꺼져 있으면 JSON 요청(`{ address }`, `{ complex }`)은 모두 403이며 직방을 부르지 않는다(테스트가 지킨다). 켜는 것은 사람이 정한다.
 - 올린 그림은 로그인된 `claude` 명령에 stdin으로 넘긴다(명령줄에는 사용자 입력을 넣지 않는다, 6절). 그림은 저장하지 않고, AI가 읽은 방 좌표만 임시 폴더에 기억한다.
+
+## 12. 추가: 집 전체 꾸미기 (`home.html`)
+
+- 메인(`App.jsx`)은 방 하나만 다룬다. `src/home.js`가 방마다 메인의 저장값(`bangkkumi-v2`)을 `bangkkumi-home`에 따로 간직하고, 고른 방 하나만 메인에 올린다. 파트너가 만들었다.
+- 방 표시는 저장값의 `userPrices`에 넣는 `'home|<방 id>': 0`이다. 이 키를 지우거나 다른 뜻으로 쓰지 않는다(가격 계산에는 쓰이지 않는다).
+- 방 바꾸기는 늘 `home.html`을 거친다(`./home.html#open=<방 id>`). 메인이 떠나면서 저장한 지금 방을 `openHome`이 먼저 받아 둔 뒤에 고른 방을 올린다.
+- 방별 금액(`costOf`)은 `App.jsx`의 합계와 같은 식이다. 합계 식을 바꾸면 함께 바꾼다. 가구가 없는 방은 0원으로 센다.
+- `FloorplanImport`에 `multi`를 주면 방을 여러 개 체크해 `onApply([{ label, room }, …])`로 넘긴다. `multi`가 없으면 전과 같다.
